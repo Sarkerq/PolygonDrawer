@@ -22,9 +22,7 @@ namespace GK1
     public partial class MainWindow : Window
     {
         BitmapSource bitmap;
-        PixelFormat pf = PixelFormats.Rgb24;
-        int width, height, rawStride;
-        byte[] pixelData;
+        Carbon visuals = new Carbon();
         DispatcherTimer timer;
 
         private GKPolygon drawnPolygon = new GKPolygon();
@@ -43,10 +41,7 @@ namespace GK1
             //dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             //dispatcherTimer.Interval = new TimeSpan(100000);
             //dispatcherTimer.Start();
-            width = Math.Max(1920,(int)drawingScreen.ActualWidth);
-            height = Math.Max(1080,(int)drawingScreen.ActualHeight);
-            rawStride = (width * pf.BitsPerPixel + 7) / 8;
-            pixelData = new byte[rawStride * height];
+
 
 
             timer = new DispatcherTimer();
@@ -57,25 +52,21 @@ namespace GK1
         }
         void UpdateScreen(object o, EventArgs e)
         {
-            bitmap = BitmapSource.Create(width, height,
-                96, 96, pf, null, pixelData, rawStride);
+            bitmap = BitmapSource.Create(visuals.width, visuals.height,
+                96, 96, visuals.pf, null, visuals.pixelData, visuals.rawStride);
             lineCarbon.Source = bitmap;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (dragged)
-            {
-                drawnPolygon.vertices[currentlyDragged].xValue = e.GetPosition(drawingScreen).X;
-                drawnPolygon.vertices[currentlyDragged].yValue = e.GetPosition(drawingScreen).Y;
-                repairAndRedrawPolygon(drawnPolygon);
-                dragged = false;
-                return;
-            }
+
             Vertice targetVertice = clickedVertice(e.GetPosition(drawingScreen));
             if (targetVertice != null) onClickedVertice(targetVertice);
-            else if (newPolygonMode) onNewVertice(e.GetPosition(drawingScreen));
-
+            else
+            {
+                
+                if (newPolygonMode) onNewVertice(e.GetPosition(drawingScreen));
+            }
         }
 
         private void onNewVertice(Point location)
@@ -113,7 +104,7 @@ namespace GK1
             {
                 if (Math.Abs(v.xValue - location.X) <= verticeRadius && Math.Abs(v.yValue - location.Y) <= verticeRadius)
                 {
-                    placeColorfulVerticeOnCanvas(v, Color.FromArgb(255, 255, 0, 0));
+                    //placeColorfulVerticeOnCanvas(v, Color.FromArgb(255, 255, 0, 0));
                     return v;
                 }
             }
@@ -170,15 +161,15 @@ namespace GK1
 
         void placeVerticeOnCarbon(Vertice v)
         {
-            for(int y = (int)v.yValue - (int)verticeRadius; y< (int)v.yValue + (int)verticeRadius; y++)
+            for (int y = (int)v.yValue - (int)verticeRadius; y < (int)v.yValue + (int)verticeRadius; y++)
                 for (int x = (int)v.xValue - (int)verticeRadius; x < (int)v.xValue + (int)verticeRadius; x++)
 
-                    SetPixel(x, y, Colors.Green, pixelData, rawStride);
+                    SetPixel(x, y, Colors.Green, visuals);
         }
 
         void repairAndRedrawPolygon(GKPolygon polygon)
         {
-            
+
             polygon.repairVertices();
             if (drawnPolygon.vertices.Count >= 2)
             {
@@ -186,18 +177,18 @@ namespace GK1
                 clearCarbon();
 
                 Vertice first = drawnPolygon.vertices[0];
-                placeVerticeOnCarbon(first);
-                
-                for (int i = 1; i < drawnPolygon.vertices.Count; i++)
-                {
-                    placeVerticeOnCarbon(drawnPolygon.vertices[i]);
-                    drawConnection(drawnPolygon.vertices[i - 1], drawnPolygon.vertices[i]);
-                }
                 drawConnection(drawnPolygon.vertices.Last(), first);
 
-                bitmap = BitmapSource.Create(width, height,
-               96, 96, pf, null, pixelData, rawStride);
-                lineCarbon.Source = bitmap;
+
+                for (int i = 1; i < drawnPolygon.vertices.Count; i++)
+                {
+                    drawConnection(drawnPolygon.vertices[i - 1], drawnPolygon.vertices[i]);
+                }
+                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
+                    placeVerticeOnCarbon(drawnPolygon.vertices[i]);
+
+
+                UpdateScreen(null, null);
             }
         }
 
@@ -232,7 +223,9 @@ namespace GK1
             int numerator = longest >> 1;
             for (int i = 0; i <= longest; i++)
             {
-                SetPixel(x, y, color, pixelData, rawStride);
+                for (int j = -1; j <= 1; j++)
+                    for (int k = -1; k <= 1; k++)
+                        SetPixel(x + k, y + j, color, visuals);
                 numerator += shortest;
                 if (!(numerator < longest))
                 {
@@ -258,13 +251,13 @@ namespace GK1
             rec.Fill = new SolidColorBrush(Colors.Red);
             drawingScreen.Children.Add(rec);
         }
-        void SetPixel(int x, int y, Color c, byte[] buffer, int rawStride)
+        void SetPixel(int x, int y, Color c, Carbon visuals)
         {
             int xIndex = x * 3;
-            int yIndex = y * rawStride;
-            buffer[xIndex + yIndex] = c.R;
-            buffer[xIndex + yIndex + 1] = c.G;
-            buffer[xIndex + yIndex + 2] = c.B;
+            int yIndex = y * visuals.rawStride;
+            visuals.pixelData[xIndex + yIndex] = c.R;
+            visuals.pixelData[xIndex + yIndex + 1] = c.G;
+            visuals.pixelData[xIndex + yIndex + 2] = c.B;
         }
         void drawVertice(Vertice v)
         {
@@ -282,13 +275,20 @@ namespace GK1
 
         private void clearCarbon()
         {
-            pixelData = new byte[rawStride * height];
+            visuals.pixelData = new byte[visuals.rawStride * visuals.height];
 
         }
 
         private void drawingScreen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-
+            if (dragged)
+            {
+                drawnPolygon.vertices[currentlyDragged].xValue = e.GetPosition(drawingScreen).X;
+                drawnPolygon.vertices[currentlyDragged].yValue = e.GetPosition(drawingScreen).Y;
+                repairAndRedrawPolygon(drawnPolygon);
+                dragged = false;
+                return;
+            }
         }
 
         private void drawingScreen_MouseMove(object sender, MouseEventArgs e)
@@ -301,52 +301,32 @@ namespace GK1
             }
 
         }
-    }
-    enum VerticeState
-    {
-        Clockwise,
-        CounterClockwise,
-        None
-    }
-    class Vertice
-    {
-        public VerticeState fixedVertical;
-        public VerticeState fixedHorizontal;
-        public bool fixedAngle;
-        public int fixedAngleValue;
-        public double xValue;
-        public double yValue;
-        public Ellipse visualRepresentation;
-        public Vertice(double x, double y)
+        double distance(Vertice v1, Vertice v2)
         {
-            fixedVertical = fixedHorizontal = VerticeState.None;
-            fixedAngle = false;
-            xValue = x;
-            yValue = y;
+            return Math.Sqrt(Math.Pow(v1.xValue - v2.xValue, 2) + Math.Pow(v1.yValue - v2.yValue, 2));
         }
-        public Vertice(Point p)
+        Point polarToCartesian(Point origin, double radius, double angle)
         {
-            fixedVertical = fixedHorizontal = VerticeState.None;
-            fixedAngle = false;
-            xValue = p.X;
-            yValue = p.Y;
+            return new Point(origin.X + radius * Math.Cos(angle), origin.Y + radius * Math.Sin(angle));
         }
-        public Vertice(Vertice v)
+    }
+    class Connection
+    {
+        public Vertice v1, v2;
+        public Connection( Vertice _v1, Vertice _v2)
         {
-            fixedVertical = v.fixedVertical;
-            fixedHorizontal = v.fixedHorizontal;
-            fixedAngle = v.fixedAngle;
-            fixedAngleValue = v.fixedAngleValue;
-            xValue = v.xValue;
-            yValue = v.yValue;
+            v1 = _v1;
+            v2 = _v2;
         }
     }
     class GKPolygon
     {
         public List<Vertice> vertices = new List<Vertice>();
+        public List<Connection> connections = new List<Connection>();
+
         public void repairVertices()
         {
-            return;
+
             bool[] verticeRepaired = new bool[vertices.Count];
             bool polygonRepaired = false;
             while (!polygonRepaired)
@@ -371,4 +351,5 @@ namespace GK1
             }
         }
     }
+
 }
