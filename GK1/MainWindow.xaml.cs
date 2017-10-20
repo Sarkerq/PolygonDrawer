@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace GK1
 {
@@ -20,6 +21,12 @@ namespace GK1
     /// </summary>
     public partial class MainWindow : Window
     {
+        BitmapSource bitmap;
+        PixelFormat pf = PixelFormats.Rgb24;
+        int width, height, rawStride;
+        byte[] pixelData;
+        DispatcherTimer timer;
+
         private GKPolygon drawnPolygon = new GKPolygon();
         private GKPolygon oldPolygon = new GKPolygon();
         const double verticeRadius = 9;
@@ -36,12 +43,23 @@ namespace GK1
             //dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             //dispatcherTimer.Interval = new TimeSpan(100000);
             //dispatcherTimer.Start();
+            width = Math.Max(1920,(int)drawingScreen.ActualWidth);
+            height = Math.Max(1080,(int)drawingScreen.ActualHeight);
+            rawStride = (width * pf.BitsPerPixel + 7) / 8;
+            pixelData = new byte[rawStride * height];
 
+
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(100);
+            timer.Tick += UpdateScreen;
+            timer.Start();
 
         }
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        void UpdateScreen(object o, EventArgs e)
         {
-
+            bitmap = BitmapSource.Create(width, height,
+                96, 96, pf, null, pixelData, rawStride);
+            lineCarbon.Source = bitmap;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -63,7 +81,7 @@ namespace GK1
         private void onNewVertice(Point location)
         {
             Vertice newV = new Vertice(location);
-            placeVerticeOnCanvas(newV);
+            placeVerticeOnCarbon(newV);
             if (newPolygonMode && drawnPolygon.vertices.Count >= 1) drawConnection(drawnPolygon.vertices.Last(), newV);
 
             drawnPolygon.vertices.Add(newV);
@@ -150,29 +168,51 @@ namespace GK1
             Canvas.SetLeft(myEllipse, v.xValue - verticeRadius);
         }
 
+        void placeVerticeOnCarbon(Vertice v)
+        {
+            for(int y = (int)v.yValue - (int)verticeRadius; y< (int)v.yValue + (int)verticeRadius; y++)
+                for (int x = (int)v.xValue - (int)verticeRadius; x < (int)v.xValue + (int)verticeRadius; x++)
+
+                    SetPixel(x, y, Colors.Green, pixelData, rawStride);
+        }
+
         void repairAndRedrawPolygon(GKPolygon polygon)
         {
+            
             polygon.repairVertices();
             if (drawnPolygon.vertices.Count >= 2)
             {
-                drawingScreen.Children.Clear();
+                //clearCanvas();
+                clearCarbon();
+
                 Vertice first = drawnPolygon.vertices[0];
-                placeVerticeOnCanvas(first);
+                placeVerticeOnCarbon(first);
+                
                 for (int i = 1; i < drawnPolygon.vertices.Count; i++)
                 {
-                    placeVerticeOnCanvas(drawnPolygon.vertices[i]);
+                    placeVerticeOnCarbon(drawnPolygon.vertices[i]);
                     drawConnection(drawnPolygon.vertices[i - 1], drawnPolygon.vertices[i]);
                 }
                 drawConnection(drawnPolygon.vertices.Last(), first);
+
+                bitmap = BitmapSource.Create(width, height,
+               96, 96, pf, null, pixelData, rawStride);
+                lineCarbon.Source = bitmap;
             }
+        }
+
+        private void clearCanvas()
+        {
+            drawingScreen.Children.Clear();
+            drawingScreen.Children.Add(lineCarbon);
         }
 
         private void drawConnection(Vertice v1, Vertice v2)
         {
-            line((int)v1.xValue, (int)v1.yValue, (int)v2.xValue, (int)v2.yValue, 1);
+            line((int)v1.xValue, (int)v1.yValue, (int)v2.xValue, (int)v2.yValue, Colors.Red);
 
         }
-        public void line(int x, int y, int x2, int y2, int color)
+        public void line(int x, int y, int x2, int y2, Color color)
         {
             int w = x2 - x;
             int h = y2 - y;
@@ -192,7 +232,7 @@ namespace GK1
             int numerator = longest >> 1;
             for (int i = 0; i <= longest; i++)
             {
-                putpixel(x, y, color);
+                SetPixel(x, y, color, pixelData, rawStride);
                 numerator += shortest;
                 if (!(numerator < longest))
                 {
@@ -218,7 +258,14 @@ namespace GK1
             rec.Fill = new SolidColorBrush(Colors.Red);
             drawingScreen.Children.Add(rec);
         }
-
+        void SetPixel(int x, int y, Color c, byte[] buffer, int rawStride)
+        {
+            int xIndex = x * 3;
+            int yIndex = y * rawStride;
+            buffer[xIndex + yIndex] = c.R;
+            buffer[xIndex + yIndex + 1] = c.G;
+            buffer[xIndex + yIndex + 2] = c.B;
+        }
         void drawVertice(Vertice v)
         {
             throw new NotImplementedException();
@@ -227,9 +274,16 @@ namespace GK1
         private void newPolygon_Click(object sender, RoutedEventArgs e)
         {
             drawnPolygon = new GKPolygon();
-            drawingScreen.Children.Clear();
+            clearCanvas();
+            clearCarbon();
             newPolygonMode = true;
             dragged = false;
+        }
+
+        private void clearCarbon()
+        {
+            pixelData = new byte[rawStride * height];
+
         }
 
         private void drawingScreen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -262,6 +316,7 @@ namespace GK1
         public int fixedAngleValue;
         public double xValue;
         public double yValue;
+        public Ellipse visualRepresentation;
         public Vertice(double x, double y)
         {
             fixedVertical = fixedHorizontal = VerticeState.None;

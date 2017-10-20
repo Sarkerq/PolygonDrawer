@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK1"
         mc:Ignorable="d"
-        Title="PolygonCreator" Height="350" Width="525">
+        Title="PolygonCreator"  ResizeMode="NoResize" WindowStyle="ToolWindow" WindowState="Maximized">
 	<Grid Background="#FFB3DD7C">
 		<Menu Background="#FFB3DD7C" Height="40"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalAlignment="Top">
 			<ItemsControl.ItemsPanel>
@@ -26,8 +26,11 @@
 				<MenuItem x:Name="fixedAngle" Background="#FFB3DD7C" Header="Fixed angle"/>
 			</MenuItem>
 		</Menu>
-		<Canvas x:Name="drawingScreen"  Margin="10,50,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove"/>
-
+		<Canvas x:Name="drawingScreen"  Margin="10,50,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove" >
+			<Image x:Name="lineCarbon">
+				
+			</Image>
+		</Canvas>
 
 	</Grid>
 </Window>
