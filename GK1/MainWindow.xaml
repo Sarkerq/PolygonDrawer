@@ -26,7 +26,7 @@
 				<MenuItem x:Name="fixedAngle" Background="#FFB3DD7C" Header="Fixed angle"/>
 			</MenuItem>
 		</Menu>
-		<Canvas x:Name="drawingScreen"  Margin="10,50,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove" >
+		<Canvas x:Name="drawingScreen"  Margin="10,50,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" >
 			<Image x:Name="lineCarbon">
 				
 			</Image>
