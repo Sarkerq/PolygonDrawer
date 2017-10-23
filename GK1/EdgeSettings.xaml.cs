@@ -11,17 +11,39 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-
 namespace GK1
 {
     /// <summary>
-    /// Interaction logic for ConnectionSettings.xaml
+    /// Interaction logic for EdgeSettings.xaml
     /// </summary>
-    public partial class ConnectionSettings : Window
+    public partial class EdgeSettings : Window
     {
-        public ConnectionSettings()
+        Edge target;
+        MainWindow context;
+        public EdgeSettings(MainWindow _context, Edge _target)
         {
             InitializeComponent();
+            target = _target;
+            context = _context;
+        }
+
+        private void newVertice_Click(object sender, RoutedEventArgs e)
+        {
+            context.putVerticeInTheMiddle(target);
+            this.Close();
+        }
+
+        private void forceVertical_Click(object sender, RoutedEventArgs e)
+        {
+            context.forceVertical(target);
+            this.Close();
+        }
+
+        private void forceHorizontal_Click(object sender, RoutedEventArgs e)
+        {
+            context.forceHorizontal(target);
+            this.Close();
+
         }
     }
 }

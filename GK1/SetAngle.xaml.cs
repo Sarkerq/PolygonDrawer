@@ -19,9 +19,25 @@ namespace GK1
     /// </summary>
     public partial class SetAngle : Window
     {
-        public SetAngle()
+        MainWindow context;
+        Vertice target;
+        public SetAngle(MainWindow _context, Vertice _target)
         {
             InitializeComponent();
+            target = _target;
+            context = _context;
+        }
+
+        private void confirm_Click(object sender, RoutedEventArgs e)
+        {
+            int angle = parseInt(degrees.Text);
+            context.forceAngle(target, angle);
+            this.Close();
+        }
+
+        private int parseInt(string text)
+        {
+            throw new NotImplementedException();
         }
     }
 }

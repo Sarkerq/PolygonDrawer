@@ -29,14 +29,36 @@ namespace GK1
         private GKPolygon oldPolygon = new GKPolygon();
         const double verticeRadius = 9;
         const int lineWidth = 3;
+
+        internal void putVerticeInTheMiddle(Edge target)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void forceAngle(Vertice target, int angle)
+        {
+            throw new NotImplementedException();
+        }
+
         bool dragged = false;
+
+        internal void forceVertical(Edge target)
+        {
+            throw new NotImplementedException();
+        }
+
         bool draggedEdge = false;
         int currentlyDragged = 0;
+
+        internal void forceHorizontal(Edge target)
+        {
+            throw new NotImplementedException();
+        }
+
         Edge currentlyDraggedEdge;
         Vector mouseToVertice1;
         Vector mouseToVertice2;
         bool newPolygonMode = true;
-        private int iter;
 
         public MainWindow()
         {
@@ -221,7 +243,7 @@ namespace GK1
             drawingScreen.Children.Add(lineCarbon);
         }
 
-        private void drawEdge(Edge con, Color c)
+        public void drawEdge(Edge con, Color c)
         {
             line(con, (int)con.v1.xValue, (int)con.v1.yValue, (int)con.v2.xValue, (int)con.v2.yValue, c);
 
@@ -396,9 +418,10 @@ namespace GK1
             showModifyEdgeWindow(targetEdge);
         }
 
-        private void showModifyEdgeWindow(Edge targetEdge)
+        private void showModifyEdgeWindow(Edge modificationTarget)
         {
-            throw new NotImplementedException();
+            EdgeSettings window = new EdgeSettings(this, modificationTarget);
+            window.Show();
         }
 
         private void onRightClickedVertice(Vertice targetVertice)
@@ -406,9 +429,10 @@ namespace GK1
             showSetAngleWindow(targetVertice);
         }
 
-        private void showSetAngleWindow(Vertice targetVertice)
+        private void showSetAngleWindow(Vertice modificationTarget)
         {
-            throw new NotImplementedException();
+            SetAngle window = new SetAngle(this, modificationTarget);
+            window.Show();
         }
     }
     public class Edge

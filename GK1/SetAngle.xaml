@@ -5,8 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK1"
         mc:Ignorable="d"
-        Title="SetAngle" Height="300" Width="300">
-    <Grid>
-        
-    </Grid>
+        Title="SetAngle" Height="180" Width="300" Topmost="True">
+	<Grid>
+		<TextBox x:Name="degrees" Height="40" Margin="120,25,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="97" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+		<Label Content="Force angle to be:" HorizontalAlignment="Left" Height="40" Margin="10,25,0,0" VerticalAlignment="Top" Width="110"/>
+		<Label Content="degrees" HorizontalAlignment="Left" Height="40" Margin="220,25,0,0" VerticalAlignment="Top" Width="60"/>
+		<Button x:Name="confirm" Content="OK" HorizontalAlignment="Left" Height="30" Margin="120,90,0,0" VerticalAlignment="Top" Width="60" Click="confirm_Click"/>
+	</Grid>
 </Window>
