@@ -30,17 +30,17 @@ namespace GK1
         const double verticeRadius = 9;
         const int lineWidth = 3;
         bool dragged = false;
+        bool draggedConnection = false;
         int currentlyDragged = 0;
+        Connection currentlyDraggedConnection;
+        Vector mouseToVertice1;
+        Vector mouseToVertice2;
         bool newPolygonMode = true;
         private int iter;
 
         public MainWindow()
         {
             InitializeComponent();
-            //System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
-            //dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
-            //dispatcherTimer.Interval = new TimeSpan(100000);
-            //dispatcherTimer.Start();
 
 
 
@@ -64,17 +64,40 @@ namespace GK1
             if (targetVertice != null) onClickedVertice(targetVertice);
             else
             {
-                
-                if (newPolygonMode) onNewVertice(e.GetPosition(drawingScreen));
+                Connection targetConnection = clickedConnection(e.GetPosition(drawingScreen));
+                if (targetConnection != null) onClickedConnection(targetConnection, e);
+                else if (newPolygonMode) onNewVertice(e.GetPosition(drawingScreen));
             }
+        }
+
+        private void onClickedConnection(Connection targetConnection, MouseButtonEventArgs e)
+        {
+            mouseToVertice1 = new Vector(e.GetPosition(drawingScreen).X - targetConnection.v1.xValue,
+                                         e.GetPosition(drawingScreen).Y - targetConnection.v1.yValue);
+            mouseToVertice2 = new Vector(e.GetPosition(drawingScreen).X - targetConnection.v2.xValue,
+                                         e.GetPosition(drawingScreen).Y - targetConnection.v2.yValue);
+            drawConnection(targetConnection, Colors.Yellow);
+            draggedConnection = true;
+            currentlyDraggedConnection = targetConnection;
+        }
+
+        private Connection clickedConnection(Point point)
+        {
+            int xIndex = (int)point.X * 3;
+            int yIndex = (int)point.Y * visuals.rawStride;
+            return visuals.pixelOwner[xIndex + yIndex];
         }
 
         private void onNewVertice(Point location)
         {
             Vertice newV = new Vertice(location);
             placeVerticeOnCarbon(newV);
-            if (newPolygonMode && drawnPolygon.vertices.Count >= 1) drawConnection(drawnPolygon.vertices.Last(), newV);
+            if (newPolygonMode && drawnPolygon.vertices.Count >= 1)
+            {
+                drawnPolygon.connections.Add(new Connection(drawnPolygon.vertices.Last(), newV));
 
+                drawConnection(drawnPolygon.connections.Last(), Colors.Red);
+            }
             drawnPolygon.vertices.Add(newV);
             //repairAndRedrawPolygon(drawnPolygon);
         }
@@ -85,7 +108,8 @@ namespace GK1
             {
                 if (target == drawnPolygon.vertices.First())
                 {
-                    drawConnection(drawnPolygon.vertices.Last(), drawnPolygon.vertices.First());
+                    drawnPolygon.connections.Add(new Connection(drawnPolygon.vertices.Last(), drawnPolygon.vertices.First()));
+                    drawConnection(drawnPolygon.connections.Last(), Colors.Red);
                     newPolygonMode = false;
                 }
 
@@ -177,12 +201,11 @@ namespace GK1
                 clearCarbon();
 
                 Vertice first = drawnPolygon.vertices[0];
-                drawConnection(drawnPolygon.vertices.Last(), first);
 
 
-                for (int i = 1; i < drawnPolygon.vertices.Count; i++)
+                for (int i = 0; i < drawnPolygon.connections.Count; i++)
                 {
-                    drawConnection(drawnPolygon.vertices[i - 1], drawnPolygon.vertices[i]);
+                    drawConnection(drawnPolygon.connections[i], Colors.Red);
                 }
                 for (int i = 0; i < drawnPolygon.vertices.Count; i++)
                     placeVerticeOnCarbon(drawnPolygon.vertices[i]);
@@ -198,12 +221,12 @@ namespace GK1
             drawingScreen.Children.Add(lineCarbon);
         }
 
-        private void drawConnection(Vertice v1, Vertice v2)
+        private void drawConnection(Connection con, Color c)
         {
-            line((int)v1.xValue, (int)v1.yValue, (int)v2.xValue, (int)v2.yValue, Colors.Red);
+            line(con, (int)con.v1.xValue, (int)con.v1.yValue, (int)con.v2.xValue, (int)con.v2.yValue, c);
 
         }
-        public void line(int x, int y, int x2, int y2, Color color)
+        public void line(Connection con, int x, int y, int x2, int y2, Color color)
         {
             int w = x2 - x;
             int h = y2 - y;
@@ -225,7 +248,7 @@ namespace GK1
             {
                 for (int j = -1; j <= 1; j++)
                     for (int k = -1; k <= 1; k++)
-                        SetPixel(x + k, y + j, color, visuals);
+                        SetPixel(con, x + k, y + j, color, visuals);
                 numerator += shortest;
                 if (!(numerator < longest))
                 {
@@ -241,15 +264,24 @@ namespace GK1
             }
         }
 
-        private void putpixel(int x, int y, int color)
+        //private void putpixel(int x, int y, int color)
+        //{
+        //    Rectangle rec = new Rectangle();
+        //    Canvas.SetTop(rec, y - lineWidth / 2);
+        //    Canvas.SetLeft(rec, x - lineWidth / 2);
+        //    rec.Width = lineWidth;
+        //    rec.Height = lineWidth;
+        //    rec.Fill = new SolidColorBrush(Colors.Red);
+        //    drawingScreen.Children.Add(rec);
+        //}
+        void SetPixel(Connection owner, int x, int y, Color c, Carbon visuals)
         {
-            Rectangle rec = new Rectangle();
-            Canvas.SetTop(rec, y - lineWidth / 2);
-            Canvas.SetLeft(rec, x - lineWidth / 2);
-            rec.Width = lineWidth;
-            rec.Height = lineWidth;
-            rec.Fill = new SolidColorBrush(Colors.Red);
-            drawingScreen.Children.Add(rec);
+            int xIndex = x * 3;
+            int yIndex = y * visuals.rawStride;
+            visuals.pixelData[xIndex + yIndex] = c.R;
+            visuals.pixelData[xIndex + yIndex + 1] = c.G;
+            visuals.pixelData[xIndex + yIndex + 2] = c.B;
+            visuals.pixelOwner[xIndex + yIndex] = owner;
         }
         void SetPixel(int x, int y, Color c, Carbon visuals)
         {
@@ -276,7 +308,7 @@ namespace GK1
         private void clearCarbon()
         {
             visuals.pixelData = new byte[visuals.rawStride * visuals.height];
-
+            visuals.pixelOwner = new Connection[visuals.rawStride * visuals.height];
         }
 
         private void drawingScreen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -289,6 +321,16 @@ namespace GK1
                 dragged = false;
                 return;
             }
+            if (draggedConnection)
+            {
+                currentlyDraggedConnection.v1.xValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
+                currentlyDraggedConnection.v1.yValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyDraggedConnection.v2.xValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
+                currentlyDraggedConnection.v2.yValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
+                repairAndRedrawPolygon(drawnPolygon);
+                draggedConnection = false;
+                return;
+            }
         }
 
         private void drawingScreen_MouseMove(object sender, MouseEventArgs e)
@@ -298,6 +340,17 @@ namespace GK1
                 drawnPolygon.vertices[currentlyDragged].xValue = Mouse.GetPosition(drawingScreen).X;
                 drawnPolygon.vertices[currentlyDragged].yValue = Mouse.GetPosition(drawingScreen).Y;
                 repairAndRedrawPolygon(drawnPolygon);
+                return;
+            }
+            if (draggedConnection)
+            {
+                currentlyDraggedConnection.v1.xValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
+                currentlyDraggedConnection.v1.yValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyDraggedConnection.v2.xValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
+                currentlyDraggedConnection.v2.yValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
+                repairAndRedrawPolygon(drawnPolygon);
+
+                return;
             }
 
         }
@@ -305,28 +358,61 @@ namespace GK1
         {
             return Math.Sqrt(Math.Pow(v1.xValue - v2.xValue, 2) + Math.Pow(v1.yValue - v2.yValue, 2));
         }
-        Point polarToCartesian(Point origin, double radius, double angle)
+        double distance(Point x, Point y)
         {
-            return new Point(origin.X + radius * Math.Cos(angle), origin.Y + radius * Math.Sin(angle));
+            return Math.Sqrt(Math.Pow(x.X - y.X, 2) + Math.Pow(x.Y - y.Y, 2));
+        }
+        Polar cartesianToPolar(Point x, Point y)
+        {
+            return new Polar(x, distance(x, y), 0);
+        }
+
+        private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            Vertice targetVertice = clickedVertice(e.GetPosition(drawingScreen));
+            if (targetVertice != null) onRightClickedVertice(targetVertice);
+            else
+            {
+                Connection targetConnection = clickedConnection(e.GetPosition(drawingScreen));
+                if (targetConnection != null) onRightClickedConnection(targetConnection, e);
+                else if (newPolygonMode) finishPolygon();
+            }
+            
+        }
+
+        private void finishPolygon()
+        {
+            return;
+            //throw new NotImplementedException();
+        }
+
+        private void onRightClickedConnection(Connection targetConnection, MouseButtonEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void onRightClickedVertice(Vertice targetVertice)
+        {
+            //throw new NotImplementedException();
         }
     }
-    class Connection
+    public class Connection
     {
         public Vertice v1, v2;
-        public Connection( Vertice _v1, Vertice _v2)
+        public Connection(Vertice _v1, Vertice _v2)
         {
             v1 = _v1;
             v2 = _v2;
         }
     }
-    class GKPolygon
+    public class GKPolygon
     {
         public List<Vertice> vertices = new List<Vertice>();
         public List<Connection> connections = new List<Connection>();
 
         public void repairVertices()
         {
-
+            return;
             bool[] verticeRepaired = new bool[vertices.Count];
             bool polygonRepaired = false;
             while (!polygonRepaired)
