@@ -25,19 +25,54 @@ namespace GK1
         Carbon visuals = new Carbon();
         DispatcherTimer timer;
 
-        private GKPolygon drawnPolygon = new GKPolygon();
+        public GKPolygon drawnPolygon = new GKPolygon();
         private GKPolygon oldPolygon = new GKPolygon();
         const double verticeRadius = 9;
         const int lineWidth = 3;
 
         internal void putVerticeInTheMiddle(Edge target)
         {
-            throw new NotImplementedException();
+            int indexVert = 0;
+            int indexEdge = 0;
+            for (int i = 0; i < drawnPolygon.vertices.Count; i++)
+            {
+                if (target.v1 == drawnPolygon.vertices[i] || target.v2 == drawnPolygon.vertices[i]) indexVert = i;
+                if (target == drawnPolygon.edges[i]) indexEdge = i;
+            }
+            Point newVerticeCoords = new Point((target.v1.coords.X + target.v2.coords.X) / 2,
+                                                (target.v1.coords.Y + target.v2.coords.Y) / 2);
+            Vertice newV = new Vertice(newVerticeCoords);
+            drawnPolygon.vertices.Insert(indexVert, newV);
+            drawnPolygon.edges.RemoveAt(indexEdge);
+            drawnPolygon.edges.Insert(indexEdge, new Edge(target.v1, newV));
+            drawnPolygon.edges.Insert(indexEdge + 1, new Edge(newV, target.v2));
+            repairAndRedrawPolygon(drawnPolygon);
         }
 
-        internal void forceAngle(Vertice target, int angle)
+        public void forceAngle(Vertice target, double angle)
         {
-            throw new NotImplementedException();
+            Vertice left, right;
+            Edge[] pair = new Edge[2];
+            int i = 0;
+            target.fixedAngle = true;
+            target.fixedAngleValue = angle;
+            foreach (Edge e in drawnPolygon.edges)
+            {
+                if (e.v1 == target || e.v2 == target)
+                {
+                    pair[i] = e;
+                    i++;
+                }
+            }
+            if (pair[0].v1 == target) left = pair[0].v2;
+            else left = pair[0].v1;
+            if (pair[1].v1 == target) right = pair[1].v2;
+            else right = pair[1].v1;
+
+            double originalAngle = angleAgainstXAxis(target.coords, left.coords);
+            Polar pol = new Polar(target.coords, distance(target.coords, right.coords), angle + originalAngle);
+            Point result = pol.toCartesian();
+            right.coords = result;
         }
 
         bool dragged = false;
@@ -47,7 +82,7 @@ namespace GK1
             throw new NotImplementedException();
         }
 
-        bool draggedEdge = false;
+        bool edgeDragged = false;
         int currentlyDragged = 0;
 
         internal void forceHorizontal(Edge target)
@@ -55,10 +90,12 @@ namespace GK1
             throw new NotImplementedException();
         }
 
-        Edge currentlyDraggedEdge;
+        Edge currentlyedgeDragged;
         Vector mouseToVertice1;
         Vector mouseToVertice2;
         bool newPolygonMode = true;
+        private Point dragWholePolygonCoords;
+        private bool polygonDragged;
 
         public MainWindow()
         {
@@ -89,18 +126,29 @@ namespace GK1
                 Edge targetEdge = clickedEdge(e.GetPosition(drawingScreen));
                 if (targetEdge != null) onClickedEdge(targetEdge, e);
                 else if (newPolygonMode) onNewVertice(e.GetPosition(drawingScreen));
+                else
+                {
+                    onMovedPolygon(e);
+                }
+
             }
+        }
+
+        private void onMovedPolygon(MouseButtonEventArgs e)
+        {
+            dragWholePolygonCoords = e.GetPosition(drawingScreen);
+            polygonDragged = true;
         }
 
         private void onClickedEdge(Edge targetEdge, MouseButtonEventArgs e)
         {
-            mouseToVertice1 = new Vector(e.GetPosition(drawingScreen).X - targetEdge.v1.xValue,
-                                         e.GetPosition(drawingScreen).Y - targetEdge.v1.yValue);
-            mouseToVertice2 = new Vector(e.GetPosition(drawingScreen).X - targetEdge.v2.xValue,
-                                         e.GetPosition(drawingScreen).Y - targetEdge.v2.yValue);
+            mouseToVertice1 = new Vector(e.GetPosition(drawingScreen).X - targetEdge.v1.coords.X,
+                                         e.GetPosition(drawingScreen).Y - targetEdge.v1.coords.Y);
+            mouseToVertice2 = new Vector(e.GetPosition(drawingScreen).X - targetEdge.v2.coords.X,
+                                         e.GetPosition(drawingScreen).Y - targetEdge.v2.coords.Y);
             drawEdge(targetEdge, Colors.Yellow);
-            draggedEdge = true;
-            currentlyDraggedEdge = targetEdge;
+            edgeDragged = true;
+            currentlyedgeDragged = targetEdge;
         }
 
         private Edge clickedEdge(Point point)
@@ -148,7 +196,7 @@ namespace GK1
         {
             foreach (Vertice v in drawnPolygon.vertices)
             {
-                if (Math.Abs(v.xValue - location.X) <= verticeRadius && Math.Abs(v.yValue - location.Y) <= verticeRadius)
+                if (Math.Abs(v.coords.X - location.X) <= verticeRadius && Math.Abs(v.coords.Y - location.Y) <= verticeRadius)
                 {
                     //placeColorfulVerticeOnCanvas(v, Color.FromArgb(255, 255, 0, 0));
                     return v;
@@ -177,8 +225,8 @@ namespace GK1
             myEllipse.Height = 2 * verticeRadius;
             // Add the Ellipse to the StackPanel.
             drawingScreen.Children.Add(myEllipse);
-            Canvas.SetTop(myEllipse, v.yValue - verticeRadius);
-            Canvas.SetLeft(myEllipse, v.xValue - verticeRadius);
+            Canvas.SetTop(myEllipse, v.coords.Y - verticeRadius);
+            Canvas.SetLeft(myEllipse, v.coords.X - verticeRadius);
         }
         void placeVerticeOnCanvas(Vertice v)
         {
@@ -201,22 +249,22 @@ namespace GK1
             myEllipse.Height = 2 * verticeRadius;
             // Add the Ellipse to the StackPanel.
             drawingScreen.Children.Add(myEllipse);
-            Canvas.SetTop(myEllipse, v.yValue - verticeRadius);
-            Canvas.SetLeft(myEllipse, v.xValue - verticeRadius);
+            Canvas.SetTop(myEllipse, v.coords.Y - verticeRadius);
+            Canvas.SetLeft(myEllipse, v.coords.X - verticeRadius);
         }
 
         void placeVerticeOnCarbon(Vertice v)
         {
-            for (int y = (int)v.yValue - (int)verticeRadius; y < (int)v.yValue + (int)verticeRadius; y++)
-                for (int x = (int)v.xValue - (int)verticeRadius; x < (int)v.xValue + (int)verticeRadius; x++)
+            for (int y = (int)v.coords.Y - (int)verticeRadius; y < (int)v.coords.Y + (int)verticeRadius; y++)
+                for (int x = (int)v.coords.X - (int)verticeRadius; x < (int)v.coords.X + (int)verticeRadius; x++)
 
                     SetPixel(x, y, Colors.Green, visuals);
         }
 
-        void repairAndRedrawPolygon(GKPolygon polygon)
+        public void repairAndRedrawPolygon(GKPolygon polygon)
         {
 
-            polygon.repairVertices();
+            repairVertices(drawnPolygon);
             if (drawnPolygon.vertices.Count >= 2)
             {
                 //clearCanvas();
@@ -245,7 +293,7 @@ namespace GK1
 
         public void drawEdge(Edge con, Color c)
         {
-            line(con, (int)con.v1.xValue, (int)con.v1.yValue, (int)con.v2.xValue, (int)con.v2.yValue, c);
+            line(con, (int)con.v1.coords.X, (int)con.v1.coords.Y, (int)con.v2.coords.X, (int)con.v2.coords.Y, c);
 
         }
         public void line(Edge con, int x, int y, int x2, int y2, Color color)
@@ -300,18 +348,24 @@ namespace GK1
         {
             int xIndex = x * 3;
             int yIndex = y * visuals.rawStride;
-            visuals.pixelData[xIndex + yIndex] = c.R;
-            visuals.pixelData[xIndex + yIndex + 1] = c.G;
-            visuals.pixelData[xIndex + yIndex + 2] = c.B;
-            visuals.pixelOwner[xIndex + yIndex] = owner;
+            if (x < visuals.width && x >= 0 && y < visuals.height && y >= 0)
+            {
+                visuals.pixelData[xIndex + yIndex] = c.R;
+                visuals.pixelData[xIndex + yIndex + 1] = c.G;
+                visuals.pixelData[xIndex + yIndex + 2] = c.B;
+                visuals.pixelOwner[xIndex + yIndex] = owner;
+            }
         }
         void SetPixel(int x, int y, Color c, Carbon visuals)
         {
             int xIndex = x * 3;
             int yIndex = y * visuals.rawStride;
-            visuals.pixelData[xIndex + yIndex] = c.R;
-            visuals.pixelData[xIndex + yIndex + 1] = c.G;
-            visuals.pixelData[xIndex + yIndex + 2] = c.B;
+            if (x < visuals.width && x >= 0 && y < visuals.height && y >= 0)
+            {
+                visuals.pixelData[xIndex + yIndex] = c.R;
+                visuals.pixelData[xIndex + yIndex + 1] = c.G;
+                visuals.pixelData[xIndex + yIndex + 2] = c.B;
+            }
         }
         void drawVertice(Vertice v)
         {
@@ -330,6 +384,8 @@ namespace GK1
         private void clearCarbon()
         {
             visuals.pixelData = new byte[visuals.rawStride * visuals.height];
+            for (int i = 0; i < visuals.rawStride * visuals.height; i++)
+                visuals.pixelData[i] = 255;
             visuals.pixelOwner = new Edge[visuals.rawStride * visuals.height];
         }
 
@@ -337,48 +393,70 @@ namespace GK1
         {
             if (dragged)
             {
-                drawnPolygon.vertices[currentlyDragged].xValue = e.GetPosition(drawingScreen).X;
-                drawnPolygon.vertices[currentlyDragged].yValue = e.GetPosition(drawingScreen).Y;
+                drawnPolygon.vertices[currentlyDragged].coords.X = e.GetPosition(drawingScreen).X;
+                drawnPolygon.vertices[currentlyDragged].coords.Y = e.GetPosition(drawingScreen).Y;
                 repairAndRedrawPolygon(drawnPolygon);
                 dragged = false;
                 return;
             }
-            if (draggedEdge)
+            if (edgeDragged)
             {
-                currentlyDraggedEdge.v1.xValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
-                currentlyDraggedEdge.v1.yValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
-                currentlyDraggedEdge.v2.xValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
-                currentlyDraggedEdge.v2.yValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyedgeDragged.v1.coords.X = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
+                currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
+                currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
                 repairAndRedrawPolygon(drawnPolygon);
-                draggedEdge = false;
+                edgeDragged = false;
                 return;
             }
+            if (polygonDragged)
+            {
+                draggingPolygon(e.GetPosition(drawingScreen));
+                polygonDragged = false;
+                return;
+            }
+        }
+
+        private void draggingPolygon(Point pt)
+        {
+            Vector displacement = pt - dragWholePolygonCoords;
+            foreach (Vertice v in drawnPolygon.vertices)
+            {
+                v.coords += displacement;
+            }
+            repairAndRedrawPolygon(drawnPolygon);
+            dragWholePolygonCoords = pt;
         }
 
         private void drawingScreen_MouseMove(object sender, MouseEventArgs e)
         {
             if (dragged)
             {
-                drawnPolygon.vertices[currentlyDragged].xValue = Mouse.GetPosition(drawingScreen).X;
-                drawnPolygon.vertices[currentlyDragged].yValue = Mouse.GetPosition(drawingScreen).Y;
+                drawnPolygon.vertices[currentlyDragged].coords.X = Mouse.GetPosition(drawingScreen).X;
+                drawnPolygon.vertices[currentlyDragged].coords.Y = Mouse.GetPosition(drawingScreen).Y;
                 repairAndRedrawPolygon(drawnPolygon);
                 return;
             }
-            if (draggedEdge)
+            if (edgeDragged)
             {
-                currentlyDraggedEdge.v1.xValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
-                currentlyDraggedEdge.v1.yValue = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
-                currentlyDraggedEdge.v2.xValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
-                currentlyDraggedEdge.v2.yValue = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyedgeDragged.v1.coords.X = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
+                currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
+                currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
                 repairAndRedrawPolygon(drawnPolygon);
 
+                return;
+            }
+            if (polygonDragged)
+            {
+                draggingPolygon(e.GetPosition(drawingScreen));
                 return;
             }
 
         }
         double distance(Vertice v1, Vertice v2)
         {
-            return Math.Sqrt(Math.Pow(v1.xValue - v2.xValue, 2) + Math.Pow(v1.yValue - v2.yValue, 2));
+            return Math.Sqrt(Math.Pow(v1.coords.X - v2.coords.X, 2) + Math.Pow(v1.coords.Y - v2.coords.Y, 2));
         }
         double distance(Point x, Point y)
         {
@@ -386,7 +464,13 @@ namespace GK1
         }
         Polar cartesianToPolar(Point x, Point y)
         {
-            return new Polar(x, distance(x, y), 0);
+            return new Polar(x, distance(x, y), angleAgainstXAxis(x, y));
+        }
+
+        private double angleAgainstXAxis(Point x, Point y)
+        {
+            Vector yRelative = y - x;
+            return Math.Atan2(yRelative.Y, yRelative.X);
         }
 
         private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -410,6 +494,8 @@ namespace GK1
                 return;
             }
             drawnPolygon.edges.Add(new Edge(drawnPolygon.vertices.Last(), drawnPolygon.vertices.First()));
+            repairAndRedrawPolygon(drawnPolygon);
+            newPolygonMode = false;
             //throw new NotImplementedException();
         }
 
@@ -434,6 +520,40 @@ namespace GK1
             SetAngle window = new SetAngle(this, modificationTarget);
             window.Show();
         }
+        public void repairVertices(GKPolygon polygon)
+        {
+            bool[] verticeRepaired = new bool[polygon.vertices.Count];
+            bool polygonRepaired = false;
+            while (!polygonRepaired)
+            {
+                for (int i = 0; i < polygon.vertices.Count; i++)
+                {
+                    Vertice v = polygon.vertices[i];
+                    if (!v.fixedAngle && v.fixedHorizontal == VerticeState.None && v.fixedVertical == VerticeState.None)
+                    {
+                        verticeRepaired[i] = true;
+                    }
+                    else if (v.fixedAngle)
+                    {
+                        forceAngle(v, v.fixedAngleValue);
+                        verticeRepaired[i] = true;
+
+                    }
+                    else verticeRepaired[i] = true;
+
+                }
+
+                polygonRepaired = true;
+                foreach (bool repaired in verticeRepaired)
+                {
+                    if (!repaired)
+                    {
+                        polygonRepaired = false;
+                        break;
+                    }
+                }
+            }
+        }
     }
     public class Edge
     {
@@ -449,32 +569,7 @@ namespace GK1
         public List<Vertice> vertices = new List<Vertice>();
         public List<Edge> edges = new List<Edge>();
 
-        public void repairVertices()
-        {
-            return;
-            bool[] verticeRepaired = new bool[vertices.Count];
-            bool polygonRepaired = false;
-            while (!polygonRepaired)
-            {
 
-
-
-
-
-
-
-
-                polygonRepaired = true;
-                foreach (bool repaired in verticeRepaired)
-                {
-                    if (!repaired)
-                    {
-                        polygonRepaired = false;
-                        break;
-                    }
-                }
-            }
-        }
     }
 
 }

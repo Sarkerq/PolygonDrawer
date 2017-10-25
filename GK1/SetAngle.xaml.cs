@@ -30,14 +30,28 @@ namespace GK1
 
         private void confirm_Click(object sender, RoutedEventArgs e)
         {
-            int angle = parseInt(degrees.Text);
-            context.forceAngle(target, angle);
-            this.Close();
+            try
+            {
+                double angle = parseDouble(degrees.Text) * Math.PI / 180;
+                context.forceAngle(target, angle);
+                context.repairAndRedrawPolygon(context.drawnPolygon);
+
+                this.Close();
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show("Angle should be a number!", "Wrong input", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
-        private int parseInt(string text)
+        private double parseDouble(string text)
         {
-            throw new NotImplementedException();
+            double parsedDouble;
+            if (double.TryParse(text, out parsedDouble))
+                return parsedDouble;
+            else
+                throw new ArgumentException();
+
         }
     }
 }

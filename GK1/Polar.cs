@@ -16,7 +16,7 @@ namespace GK1
             angle = a;
         }
 
-        Point toCartesian(Point origin, double radius, double angle)
+        public Point toCartesian()
         {
             return new Point(origin.X + radius * Math.Cos(angle), origin.Y + radius * Math.Sin(angle));
         }

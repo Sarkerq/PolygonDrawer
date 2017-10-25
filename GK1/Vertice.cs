@@ -19,23 +19,20 @@ namespace GK1
         public VerticeState fixedVertical;
         public VerticeState fixedHorizontal;
         public bool fixedAngle;
-        public int fixedAngleValue;
-        public double xValue;
-        public double yValue;
+        public double fixedAngleValue;
+        public Point coords;
         public Ellipse visualRepresentation;
         public Vertice(double x, double y)
         {
             fixedVertical = fixedHorizontal = VerticeState.None;
             fixedAngle = false;
-            xValue = x;
-            yValue = y;
+            coords = new Point(x, y);
         }
         public Vertice(Point p)
         {
             fixedVertical = fixedHorizontal = VerticeState.None;
             fixedAngle = false;
-            xValue = p.X;
-            yValue = p.Y;
+            coords = p;
         }
         public Vertice(Vertice v)
         {
@@ -43,8 +40,7 @@ namespace GK1
             fixedHorizontal = v.fixedHorizontal;
             fixedAngle = v.fixedAngle;
             fixedAngleValue = v.fixedAngleValue;
-            xValue = v.xValue;
-            yValue = v.yValue;
+            coords = v.coords;
         }
     }
     
