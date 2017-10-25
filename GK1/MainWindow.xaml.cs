@@ -79,7 +79,22 @@ namespace GK1
 
         internal void forceVertical(Edge target)
         {
-            throw new NotImplementedException();
+            Point bottom = target.v1.coords;
+            Point top = target.v2.coords;
+            if (bottom.Y > top.Y)
+            {
+                Point tmp = bottom;
+                bottom = top;
+                top = tmp;
+
+                Polar pol = new Polar(bottom, distance(bottom, top), Math.PI/2);
+                target.v1.coords = pol.toCartesian();
+            }
+            else
+            {
+                Polar pol = new Polar(bottom, distance(bottom, top), Math.PI / 2);
+                target.v2.coords = pol.toCartesian();
+            }
         }
 
         bool edgeDragged = false;
@@ -87,7 +102,22 @@ namespace GK1
 
         internal void forceHorizontal(Edge target)
         {
-            throw new NotImplementedException();
+            Point left = target.v1.coords;
+            Point right = target.v2.coords;
+            if (left.X > right.X)
+            {
+                Point tmp = left;
+                left = right;
+                right = tmp;
+
+                Polar pol = new Polar(left, distance(left, right), 0);
+                target.v1.coords = pol.toCartesian();
+            }
+            else
+            {
+                Polar pol = new Polar(left, distance(left, right), 0);
+                target.v2.coords = pol.toCartesian();
+            }
         }
 
         Edge currentlyedgeDragged;
@@ -524,23 +554,31 @@ namespace GK1
         {
             bool[] verticeRepaired = new bool[polygon.vertices.Count];
             bool polygonRepaired = false;
+            int iter = 0;
             while (!polygonRepaired)
             {
+                if (iter > 1000) throw new StackOverflowException();
                 for (int i = 0; i < polygon.vertices.Count; i++)
                 {
-                    Vertice v = polygon.vertices[i];
-                    if (!v.fixedAngle && v.fixedHorizontal == VerticeState.None && v.fixedVertical == VerticeState.None)
+                    if (!verticeRepaired[i])
                     {
-                        verticeRepaired[i] = true;
-                    }
-                    else if (v.fixedAngle)
-                    {
-                        forceAngle(v, v.fixedAngleValue);
-                        verticeRepaired[i] = true;
+                        Vertice v = polygon.vertices[i];
+                        if (!v.fixedAngle && v.fixedHorizontal == VerticeState.None && v.fixedVertical == VerticeState.None)
+                        {
+                            verticeRepaired[i] = true;
+                        }
+                        else if (v.fixedAngle)
+                        {
+                            forceAngle(v, v.fixedAngleValue);
+                            verticeRepaired[(i - 1) % polygon.vertices.Count] = false;
+                            verticeRepaired[(i + 1) % polygon.vertices.Count] = false;
 
+                        }
+                        else
+                        {
+                            verticeRepaired[i] = true;
+                        }
                     }
-                    else verticeRepaired[i] = true;
-
                 }
 
                 polygonRepaired = true;
