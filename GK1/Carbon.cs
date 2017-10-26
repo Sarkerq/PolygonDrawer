@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -113,15 +114,57 @@ namespace GK1
                     drawEdge(drawnPolygon.edges[i], Colors.DarkGray);
                 }
                 for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(drawnPolygon.vertices[i], Colors.Black,Colors.White);
+                    drawVertice(drawnPolygon.vertices[i], Colors.Black, Colors.White);
 
-                for(int i = 0;i<drawnPolygon.vertices.Count;i++)
+                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
                 {
                     if (drawnPolygon.vertices[i].fixedAngle)
                         drawVertice(drawnPolygon.vertices[i], Colors.Black, Colors.Red);
                 }
+                for (int i = 0; i < drawnPolygon.edges.Count; i++)
+                {
+                    drawEdgeStatus(drawnPolygon.edges[i]);
+                }
             }
 
+        }
+
+        private void drawEdgeStatus(Edge edge)
+        {
+            Point middle = (Point)(Vector.Add((Vector)edge.v1.coords, (Vector)edge.v2.coords) / 2);
+            if (edge.state == EdgeState.Horizontal)
+            {
+                for (int y = (int)middle.Y - Global.statusRadius; y <= (int)middle.Y + Global.statusRadius; y++)
+                    for (int x = (int)middle.X - Global.statusRadius; x <= (int)middle.X + Global.statusRadius; x++)
+                    {
+                        if (Math.Abs(y - (int)middle.Y) == Global.statusLineSeparRadius && Math.Abs(x - (int)middle.X) <= Global.statusLineLengthRadius)
+                            SetPixel(x, y, Colors.Black);
+                        else if (y == (int)middle.Y - Global.statusRadius || y == (int)middle.Y + Global.statusRadius ||
+                                 x == (int)middle.X - Global.statusRadius || x == (int)middle.X + Global.statusRadius)
+                            SetPixel(x, y, Colors.Black);
+
+                        else
+                            SetPixel(x, y, Colors.Gray);
+
+                    }
+
+            }
+            else if (edge.state == EdgeState.Vertical)
+            {
+                for (int y = (int)middle.Y - Global.statusRadius; y <= (int)middle.Y + Global.statusRadius; y++)
+                    for (int x = (int)middle.X - Global.statusRadius; x <= (int)middle.X + Global.statusRadius; x++)
+                    {
+                        if (Math.Abs(x - (int)middle.X) == Global.statusLineSeparRadius && Math.Abs(y - (int)middle.Y) <= Global.statusLineLengthRadius)
+                            SetPixel(x, y, Colors.Black);
+                        else if (y == (int)middle.Y - Global.statusRadius || y == (int)middle.Y + Global.statusRadius ||
+                                 x == (int)middle.X - Global.statusRadius || x == (int)middle.X + Global.statusRadius)
+                            SetPixel(x, y, Colors.Black);
+
+                        else
+                            SetPixel(x, y, Colors.Gray);
+
+                    }
+            }
         }
 
         private void drawFixedVertice(Vertice vertice)
@@ -133,7 +176,7 @@ namespace GK1
         {
             pixelData = new byte[rawStride * height];
             pixelOwner = new Edge[rawStride * height];
-            for(int i =0;i<pixelData.Length;i++)
+            for (int i = 0; i < pixelData.Length; i++)
             {
                 pixelData[i] = 255;
             }

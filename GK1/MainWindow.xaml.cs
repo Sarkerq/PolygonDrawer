@@ -279,13 +279,17 @@ namespace GK1
 
         private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            Vertice targetVertice = ClickedVertice(e.GetPosition(drawingScreen));
-            if (targetVertice != null) OnRightClickedVertice(targetVertice);
+            if (newPolygonMode) FinishPolygon();
             else
             {
-                Edge targetEdge = ClickedEdge(e.GetPosition(drawingScreen));
-                if (targetEdge != null) OnRightClickedEdge(targetEdge, e);
-                else if (newPolygonMode) FinishPolygon();
+                Vertice targetVertice = ClickedVertice(e.GetPosition(drawingScreen));
+                if (targetVertice != null) OnRightClickedVertice(targetVertice);
+                else
+                {
+                    Edge targetEdge = ClickedEdge(e.GetPosition(drawingScreen));
+                    if (targetEdge != null) OnRightClickedEdge(targetEdge, e);
+
+                }
             }
 
         }
@@ -310,7 +314,7 @@ namespace GK1
         private void ShowModifyEdgeWindow(Edge modificationTarget)
         {
             EdgeSettings window = new EdgeSettings(this, modificationTarget);
-            window.Show();
+            window.ShowDialog();
         }
 
         private void OnRightClickedVertice(Vertice targetVertice)
@@ -321,7 +325,7 @@ namespace GK1
         private void ShowSetAngleWindow(Vertice modificationTarget)
         {
             SetAngle window = new SetAngle(this, modificationTarget);
-            window.Show();
+            window.ShowDialog();
         }
 
 

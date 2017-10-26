@@ -11,6 +11,10 @@ namespace GK1
     {
         public const double verticeRadius = 12;
         public const int lineWidth = 3;
+        public const int statusRadius = 10;
+        public const int statusLineSeparRadius = 3;
+        public const int statusLineLengthRadius = 6;
+
         public const double pixelEpsilon = 0.5;
         public const double angleEpsilon = 0.5 * Math.PI / 180;
 
@@ -34,6 +38,12 @@ namespace GK1
         static public double GetAngle(Vertice left, Vertice target, Vertice right)
         {
             return Global.AngleAgainstXAxis(target.coords, left.coords) - Global.AngleAgainstXAxis(target.coords, right.coords);
+        }
+
+        internal static Point Mirror(Vertice target, Edge tmp)
+        {
+            Polar pol = new Polar(tmp.v1.coords, Distance(target, tmp.v1),  AngleAgainstXAxis(tmp.v1.coords,tmp.v2.coords) - GetAngle(target, tmp.v1, tmp.v2));
+            return pol.toCartesian();
         }
     }
 }

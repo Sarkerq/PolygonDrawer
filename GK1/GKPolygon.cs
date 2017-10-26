@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -55,6 +56,7 @@ namespace GK1
                 }
                 else RepairVertice(v, true);
 
+                //if (!IsCorrectVertice(v, true)) throw new SanityException();
 
                 iter = (iter + 1) % vertices.Count;
                 first = false;
@@ -71,6 +73,8 @@ namespace GK1
                     if (!first) break;
                 }
                 else RepairVertice(v, false);
+                //if (!IsCorrectVertice(v, false)) throw new SanityException();
+                //if (!IsCorrectVertice(v, true)) throw new SanityException();
 
                 newIter = (newIter - 1 + vertices.Count) % vertices.Count;
                 first = false;
@@ -82,6 +86,11 @@ namespace GK1
 
         internal void deleteVertice(Vertice target)
         {
+            if (vertices.Count <= 3)
+            {
+                MessageBox.Show("Polygon should have at least 3 vertices!", "Not enough vertices", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             int index = vertices.IndexOf(target);
 
             vertices.RemoveAt(index);
@@ -111,6 +120,8 @@ namespace GK1
             else
                 chosen = previousEdge(v);
 
+            Vertice mutable = chosen.v1;
+            if (mutable == v) mutable = chosen.v2;
 
             if (v.fixedAngle)
             {
@@ -118,11 +129,11 @@ namespace GK1
             }
             if (chosen.state == EdgeState.Horizontal)
             {
-                chosen.ForceHorizontal();
+                chosen.ForceHorizontal(mutable);
             }
             if (chosen.state == EdgeState.Vertical)
             {
-                chosen.ForceVertical();
+                chosen.ForceVertical(mutable);
             }
 
         }
@@ -160,6 +171,16 @@ namespace GK1
         {
             int index = vertices.IndexOf(v);
             return edges[(index - 1 + vertices.Count) % vertices.Count];
+        }
+        public Edge nextEdge(Edge e)
+        {
+            int index = edges.IndexOf(e);
+            return edges[index];
+        }
+        public Edge previousEdge(Edge e)
+        {
+            int index = edges.IndexOf(e);
+            return edges[(index - 1 + edges.Count) % edges.Count];
         }
         public void PutVerticeInTheMiddle(Edge target)
         {
@@ -224,10 +245,39 @@ namespace GK1
                 Point result = pol.toCartesian();
                 left.coords = result;
             }
+            if (!CorrectAngle(target))
+            {
+                Edge tmp = new Edge(left, right);
+                target.coords = Global.Mirror(target, tmp);
+               // if (!CorrectAngle(target)) throw new  SanityException();
+            }
         }
 
 
+        internal bool canForce(Edge e, EdgeState state)
+        {
+            return (nextEdge(e).state != state && previousEdge(e).state != state);
+        }
 
+    }
 
+    [Serializable]
+    internal class SanityException : Exception
+    {
+        public SanityException()
+        {
+        }
+
+        public SanityException(string message) : base(message)
+        {
+        }
+
+        public SanityException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected SanityException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
     }
 }

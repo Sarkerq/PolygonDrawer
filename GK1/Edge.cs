@@ -35,12 +35,21 @@ namespace GK1
             return state != EdgeState.Horizontal || Math.Abs(v1.coords.Y - v2.coords.Y) < Global.pixelEpsilon;
 
         }
-        internal void ForceVertical()
+        internal void ForceVertical(Vertice mutable = null)
         {
 
             Point bottom = v1.coords;
             Point top = v2.coords;
-            if (bottom.Y > top.Y)
+            if (mutable != null)
+            {
+                Point fixated = bottom;
+                if (v1 == mutable) fixated = top;
+                Polar pol = new Polar(fixated, Global.Distance(bottom, top), Math.PI / 2);
+                mutable.coords = pol.toCartesian();
+                v1.fixedHorizontal = VerticeState.Top;
+                v2.fixedHorizontal = VerticeState.Bottom;
+            }
+            else if(bottom.Y > top.Y)
             {
                 Point tmp = bottom;
                 bottom = top;
@@ -70,11 +79,20 @@ namespace GK1
             state = EdgeState.None;
         }
 
-        internal void ForceHorizontal()
+        internal void ForceHorizontal(Vertice mutable = null)
         {
             Point left = v1.coords;
             Point right = v2.coords;
-            if (left.X > right.X)
+            if(mutable != null)
+            {
+                Point fixated = left;
+                if (v1 == mutable) fixated = right;
+                Polar pol = new Polar(fixated, Global.Distance(left, right), 0);
+                mutable.coords = pol.toCartesian();
+                v1.fixedHorizontal = VerticeState.Right;
+                v2.fixedHorizontal = VerticeState.Left;
+            }
+            else if (left.X > right.X)
             {
                 Point tmp = left;
                 left = right;
@@ -86,7 +104,7 @@ namespace GK1
                 v2.fixedHorizontal = VerticeState.Left;
 
             }
-            else
+            else 
             {
                 Polar pol = new Polar(left, Global.Distance(left, right), 0);
                 v2.coords = pol.toCartesian();
@@ -96,5 +114,7 @@ namespace GK1
             state = EdgeState.Horizontal;
 
         }
+
+
     }
 }
