@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace GK1
 {
 
 
-    class Carbon
+    public class Carbon
     {
         public const int MAX_WIDTH = 1920;
         public const int MAX_HEIGHT = 1080;
@@ -17,7 +18,6 @@ namespace GK1
         public PixelFormat pf = PixelFormats.Rgb24;
         public byte[] pixelData;
         public Edge[] pixelOwner;
-
         public Carbon()
         {
             width = MAX_WIDTH;
@@ -89,6 +89,31 @@ namespace GK1
                 for (int x = (int)v.coords.X - (int)Global.verticeRadius; x < (int)v.coords.X + (int)Global.verticeRadius; x++)
 
                     SetPixel(x, y, Colors.Green);
+        }
+        public void redrawPolygon(GKPolygon drawnPolygon)
+        {
+            if (drawnPolygon.vertices.Count >= 1)
+            {
+                clear();
+
+                Vertice first = drawnPolygon.vertices[0];
+
+
+                for (int i = 0; i < drawnPolygon.edges.Count; i++)
+                {
+                    drawEdge(drawnPolygon.edges[i], Colors.Red);
+                }
+                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
+                    drawVertice(drawnPolygon.vertices[i]);
+
+
+            }
+
+        }
+        public void clear()
+        {
+            pixelData = new byte[rawStride * height];
+            pixelOwner = new Edge[rawStride * height];
         }
     }
 }

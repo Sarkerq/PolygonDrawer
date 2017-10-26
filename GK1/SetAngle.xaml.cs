@@ -34,7 +34,7 @@ namespace GK1
             {
                 double angle = parseDouble(degrees.Text) * Math.PI / 180;
                 context.forceAngle(target, angle, VerticeFix.Left);
-                context.repairAndRedrawPolygon(context.drawnPolygon, target);
+                context.repairAndRefreshPolygon(context.drawnPolygon, target);
 
                 this.Close();
             }

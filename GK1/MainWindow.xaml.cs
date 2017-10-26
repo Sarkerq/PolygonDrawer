@@ -24,49 +24,26 @@ namespace GK1
     public partial class MainWindow : Window
     {
         BitmapSource bitmap;
-        Carbon visuals = new Carbon();
-        DispatcherTimer timer;
-
-        public GKPolygon drawnPolygon = new GKPolygon();
-        private GKPolygon oldPolygon = new GKPolygon();
+        public Carbon visuals = new Carbon();
+        public GKPolygon drawnPolygon;
 
 
-        internal void putVerticeInTheMiddle(Edge target)
+        public MainWindow()
         {
-            int indexVert = 0;
-            int indexEdge = 0;
-            clearStatus(target.v1);
-            clearStatus(target.v2);
+            InitializeComponent();
+            drawnPolygon = new GKPolygon(visuals);
 
-            for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-            {
-                if (target.v1 == drawnPolygon.vertices[i] || target.v2 == drawnPolygon.vertices[i]) indexVert = i;
-                if (target == drawnPolygon.edges[i]) indexEdge = i;
-            }
-            Point newVerticeCoords = new Point((target.v1.coords.X + target.v2.coords.X) / 2,
-                                                (target.v1.coords.Y + target.v2.coords.Y) / 2);
-            Vertice newV = new Vertice(newVerticeCoords);
-            drawnPolygon.vertices.Insert(indexVert, newV);
-            drawnPolygon.edges.RemoveAt(indexEdge);
-            drawnPolygon.edges.Insert(indexEdge, new Edge(target.v1, newV));
-            drawnPolygon.edges.Insert(indexEdge + 1, new Edge(newV, target.v2));
-            redrawPolygon(drawnPolygon);
+            UpdateScreen();
+
         }
 
-        internal void repairAndRedrawPolygon(GKPolygon drawnPolygon, Vertice target)
+        internal void repairAndRefreshPolygon(GKPolygon drawnPolygon, Vertice target)
         {
             int index = drawnPolygon.vertices.IndexOf(target);
-            repairAndRedrawPolygon(drawnPolygon, index);
+            repairAndRefreshPolygon(drawnPolygon, index);
         }
 
-        private void clearStatus(Vertice v1)
-        {
-            v1.fixedAngle = false;
-            v1.fixedAngleValue = 0;
-            v1.fixedHorizontal = VerticeState.None;
-            v1.fixedVertical = VerticeState.None;
-        }
-
+        
         public void forceAngle(Vertice target, double angle, VerticeFix fix)
         {
             Vertice left, right;
@@ -95,16 +72,16 @@ namespace GK1
             //    right = tmp;
             //}
 
-            double originalLeftAngle = angleAgainstXAxis(target.coords, left.coords);
+            double originalLeftAngle = Global.angleAgainstXAxis(target.coords, left.coords);
             if (fix == VerticeFix.Left)
             {
-                Polar pol = new Polar(target.coords, distance(target.coords, right.coords), angle + originalLeftAngle);
+                Polar pol = new Polar(target.coords, Global.distance(target.coords, right.coords), angle + originalLeftAngle);
                 Point result = pol.toCartesian();
                 right.coords = result;
             }
             else
             {
-                Polar pol = new Polar(target.coords, distance(target.coords, left.coords), angle + originalLeftAngle);
+                Polar pol = new Polar(target.coords, Global.distance(target.coords, left.coords), angle + originalLeftAngle);
                 Point result = pol.toCartesian();
                 left.coords = result;
             }
@@ -112,40 +89,12 @@ namespace GK1
 
         private double getAngle(Vertice left, Vertice target, Vertice right)
         {
-            return angleAgainstXAxis(target.coords, left.coords) - angleAgainstXAxis(target.coords, right.coords);
+            return Global.angleAgainstXAxis(target.coords, left.coords) - Global.angleAgainstXAxis(target.coords, right.coords);
         }
 
         bool dragged = false;
 
-        internal void forceVertical(Edge target)
-        {
 
-            Point bottom = target.v1.coords;
-            Point top = target.v2.coords;
-            if (bottom.Y > top.Y)
-            {
-                Point tmp = bottom;
-                bottom = top;
-                top = tmp;
-
-                Polar pol = new Polar(bottom, distance(bottom, top), Math.PI / 2);
-                target.v1.coords = pol.toCartesian();
-
-                target.v1.fixedVertical = VerticeState.Top;
-                target.v2.fixedVertical = VerticeState.Bottom;
-            }
-            else
-            {
-                Polar pol = new Polar(bottom, distance(bottom, top), Math.PI / 2);
-                target.v2.coords = pol.toCartesian();
-
-                target.v1.fixedVertical = VerticeState.Bottom;
-                target.v2.fixedVertical = VerticeState.Top;
-
-            }
-            target.state = EdgeState.Vertical;
-
-        }
 
         bool edgeDragged = false;
         int currentlyDragged = 0;
@@ -160,7 +109,7 @@ namespace GK1
                 left = right;
                 right = tmp;
 
-                Polar pol = new Polar(left, distance(left, right), 0);
+                Polar pol = new Polar(left, Global.distance(left, right), 0);
                 target.v1.coords = pol.toCartesian();
                 target.v1.fixedHorizontal = VerticeState.Right;
                 target.v2.fixedHorizontal = VerticeState.Left;
@@ -168,7 +117,7 @@ namespace GK1
             }
             else
             {
-                Polar pol = new Polar(left, distance(left, right), 0);
+                Polar pol = new Polar(left, Global.distance(left, right), 0);
                 target.v2.coords = pol.toCartesian();
                 target.v1.fixedHorizontal = VerticeState.Left;
                 target.v2.fixedHorizontal = VerticeState.Right;
@@ -185,19 +134,8 @@ namespace GK1
         private bool polygonDragged;
         private double epsilon;
 
-        public MainWindow()
-        {
-            InitializeComponent();
 
-
-
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(100);
-            timer.Tick += UpdateScreen;
-            timer.Start();
-
-        }
-        void UpdateScreen(object o, EventArgs e)
+        void UpdateScreen()
         {
             bitmap = BitmapSource.Create(visuals.width, visuals.height,
                 96, 96, visuals.pf, null, visuals.pixelData, visuals.rawStride);
@@ -253,7 +191,7 @@ namespace GK1
                 drawnPolygon.edges.Add(new Edge(drawnPolygon.vertices.Last(), newV));
             }
             drawnPolygon.vertices.Add(newV);
-            redrawPolygon(drawnPolygon);
+            refreshPolygon(drawnPolygon);
         }
 
         private void onClickedVertice(Vertice target)
@@ -272,7 +210,7 @@ namespace GK1
                 dragged = true;
                 currentlyDragged = drawnPolygon.vertices.IndexOf(target);
             }
-            redrawPolygon(drawnPolygon);
+            refreshPolygon(drawnPolygon);
         }
 
         private Vertice clickedVertice(Point location)
@@ -286,17 +224,21 @@ namespace GK1
             }
             return null;
         }
- 
 
 
 
-        public void repairAndRedrawPolygon(GKPolygon polygon, int changedVerticeIndex)
+
+        public void repairAndRefreshPolygon(GKPolygon polygon, int changedVerticeIndex)
         {
-
-            repairVertices(drawnPolygon, changedVerticeIndex);
-            redrawPolygon(drawnPolygon);
+            repairVertices(polygon, changedVerticeIndex);
+            refreshPolygon(polygon);
+            UpdateScreen();
         }
-
+        public void refreshPolygon(GKPolygon polygon)
+        {
+            visuals.redrawPolygon(polygon);
+            UpdateScreen();
+        }
         private bool repairVertices(GKPolygon polygon, int changedVerticeIndex)
         {
             return true;
@@ -348,11 +290,11 @@ namespace GK1
                 toChange = chosen.v2;
             else
                 toChange = chosen.v1;
-            if(v.fixedAngle)
+            if (v.fixedAngle)
             {
                 forceAngle(v, v.fixedAngleValue, chosen);
             }
-            if(chosen.state == EdgeState.Horizontal)
+            if (chosen.state == EdgeState.Horizontal)
             {
 
             }
@@ -391,26 +333,26 @@ namespace GK1
             //    right = tmp;
             //}
 
-            double originalLeftAngle = angleAgainstXAxis(target.coords, left.coords);
+            double originalLeftAngle = Global.angleAgainstXAxis(target.coords, left.coords);
             if (chosen == pair[0])
             {
-                Polar pol = new Polar(target.coords, distance(target.coords, right.coords), angle + originalLeftAngle);
+                Polar pol = new Polar(target.coords, Global.distance(target.coords, right.coords), angle + originalLeftAngle);
                 Point result = pol.toCartesian();
                 right.coords = result;
             }
             else
             {
-                Polar pol = new Polar(target.coords, distance(target.coords, left.coords), angle + originalLeftAngle);
+                Polar pol = new Polar(target.coords, Global.distance(target.coords, left.coords), angle + originalLeftAngle);
                 Point result = pol.toCartesian();
                 left.coords = result;
             }
         }
 
-        public void repairAndRedrawPolygon(GKPolygon polygon, Edge changedEdge)
+        public void repairAndRefreshPolygon(GKPolygon polygon, Edge changedEdge)
         {
 
             repairVertices(drawnPolygon, changedEdge);
-            redrawPolygon(drawnPolygon);
+            refreshPolygon(drawnPolygon);
         }
 
         private void repairVertices(GKPolygon drawnPolygon, Edge changedEdge)
@@ -418,26 +360,7 @@ namespace GK1
             repairVertices(drawnPolygon, drawnPolygon.vertices.IndexOf(changedEdge.v1));
         }
 
-        public void redrawPolygon(GKPolygon drawnPolygon)
-        {
-            if (drawnPolygon.vertices.Count >= 1)
-            {
-                clearCarbon();
 
-                Vertice first = drawnPolygon.vertices[0];
-
-
-                for (int i = 0; i < drawnPolygon.edges.Count; i++)
-                {
-                    visuals.drawEdge(drawnPolygon.edges[i], Colors.Red);
-                }
-                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    visuals.drawVertice(drawnPolygon.vertices[i]);
-
-
-                UpdateScreen(null, null);
-            }
-        }
 
         private void clearCanvas()
         {
@@ -448,20 +371,16 @@ namespace GK1
 
         private void newPolygon_Click(object sender, RoutedEventArgs e)
         {
-            drawnPolygon = new GKPolygon();
+
             clearCanvas();
-            clearCarbon();
+            visuals.clear();
             newPolygonMode = true;
             dragged = false;
+            drawnPolygon = new GKPolygon(visuals);
+            refreshPolygon(drawnPolygon);
         }
 
-        private void clearCarbon()
-        {
-            visuals.pixelData = new byte[visuals.rawStride * visuals.height];
-            //for (int i = 0; i < visuals.rawStride * visuals.height; i++)
-            //    visuals.pixelData[i] = 255;
-            visuals.pixelOwner = new Edge[visuals.rawStride * visuals.height];
-        }
+
 
         private void drawingScreen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -469,7 +388,7 @@ namespace GK1
             {
                 drawnPolygon.vertices[currentlyDragged].coords.X = e.GetPosition(drawingScreen).X;
                 drawnPolygon.vertices[currentlyDragged].coords.Y = e.GetPosition(drawingScreen).Y;
-                repairAndRedrawPolygon(drawnPolygon,currentlyDragged);
+                repairAndRefreshPolygon(drawnPolygon, currentlyDragged);
                 dragged = false;
                 return;
             }
@@ -479,7 +398,7 @@ namespace GK1
                 currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
                 currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                repairAndRedrawPolygon(drawnPolygon,currentlyedgeDragged);
+                repairAndRefreshPolygon(drawnPolygon, currentlyedgeDragged);
                 edgeDragged = false;
                 return;
             }
@@ -498,7 +417,7 @@ namespace GK1
             {
                 v.coords += displacement;
             }
-            redrawPolygon(drawnPolygon);
+            refreshPolygon(drawnPolygon);
             dragWholePolygonCoords = pt;
         }
 
@@ -508,7 +427,7 @@ namespace GK1
             {
                 drawnPolygon.vertices[currentlyDragged].coords.X = Mouse.GetPosition(drawingScreen).X;
                 drawnPolygon.vertices[currentlyDragged].coords.Y = Mouse.GetPosition(drawingScreen).Y;
-                repairAndRedrawPolygon(drawnPolygon, currentlyDragged);
+                repairAndRefreshPolygon(drawnPolygon, currentlyDragged);
                 return;
             }
             if (edgeDragged)
@@ -517,7 +436,7 @@ namespace GK1
                 currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
                 currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                repairAndRedrawPolygon(drawnPolygon, currentlyedgeDragged);
+                repairAndRefreshPolygon(drawnPolygon, currentlyedgeDragged);
 
                 return;
             }
@@ -528,24 +447,9 @@ namespace GK1
             }
 
         }
-        double distance(Vertice v1, Vertice v2)
-        {
-            return Math.Sqrt(Math.Pow(v1.coords.X - v2.coords.X, 2) + Math.Pow(v1.coords.Y - v2.coords.Y, 2));
-        }
-        double distance(Point x, Point y)
-        {
-            return Math.Sqrt(Math.Pow(x.X - y.X, 2) + Math.Pow(x.Y - y.Y, 2));
-        }
-        Polar cartesianToPolar(Point x, Point y)
-        {
-            return new Polar(x, distance(x, y), angleAgainstXAxis(x, y));
-        }
 
-        private double angleAgainstXAxis(Point x, Point y)
-        {
-            Vector yRelative = y - x;
-            return Math.Atan2(yRelative.Y, yRelative.X);
-        }
+
+
 
         private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -568,9 +472,8 @@ namespace GK1
                 return;
             }
             drawnPolygon.edges.Add(new Edge(drawnPolygon.vertices.Last(), drawnPolygon.vertices.First()));
-            redrawPolygon(drawnPolygon);
+            refreshPolygon(drawnPolygon);
             newPolygonMode = false;
-            //throw new NotImplementedException();
         }
 
         private void onRightClickedEdge(Edge targetEdge, MouseButtonEventArgs e)
@@ -657,12 +560,6 @@ namespace GK1
             state = EdgeState.None;
         }
     }
-    public class GKPolygon
-    {
-        public List<Vertice> vertices = new List<Vertice>();
-        public List<Edge> edges = new List<Edge>();
-
-
-    }
+   
 
 }
