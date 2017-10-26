@@ -44,7 +44,7 @@ namespace GK1
             fixedAngleValue = v.fixedAngleValue;
             coords = v.coords;
         }
-        public void clearStatus()
+        public void ClearStatus()
         {
             fixedAngle = false;
             fixedAngleValue = 0;
@@ -52,5 +52,5 @@ namespace GK1
             fixedVertical = VerticeState.None;
         }
     }
-    
+
 }

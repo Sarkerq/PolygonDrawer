@@ -32,9 +32,9 @@ namespace GK1
         {
             try
             {
-                double angle = parseDouble(degrees.Text) * Math.PI / 180;
-                context.forceAngle(target, angle, VerticeFix.Left);
-                context.repairAndRefreshPolygon(context.drawnPolygon, target);
+                double angle = ParseDouble(degrees.Text) * Math.PI / 180;
+                context.drawnPolygon.ForceAngle(target, angle, VerticeFix.Left);
+                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
 
                 this.Close();
             }
@@ -44,10 +44,9 @@ namespace GK1
             }
         }
 
-        private double parseDouble(string text)
+        private double ParseDouble(string text)
         {
-            double parsedDouble;
-            if (double.TryParse(text, out parsedDouble))
+            if (double.TryParse(text, out double parsedDouble))
                 return parsedDouble;
             else
                 throw new ArgumentException();
