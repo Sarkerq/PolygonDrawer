@@ -25,6 +25,15 @@ namespace GK1
             InitializeComponent();
             target = _target;
             context = _context;
+            if (target.state == EdgeState.Horizontal)
+            {
+                forceHorizontal.Content = "Unset horizontal";
+            }
+            if (target.state == EdgeState.Vertical)
+            {
+                forceVertical.Content = "Unset vertical";
+
+            }
         }
 
         private void newVertice_Click(object sender, RoutedEventArgs e)
@@ -32,23 +41,44 @@ namespace GK1
             context.drawnPolygon.PutVerticeInTheMiddle(target);
             context.RefreshPolygon(context.drawnPolygon);
 
-            this.Close();
+            Close();
         }
 
         private void forceVertical_Click(object sender, RoutedEventArgs e)
         {
-            target.ForceVertical();
-            context.RepairAndRefreshPolygon(context.drawnPolygon, target);
+            if (target.state == EdgeState.Vertical)
+            {
+                target.ClearStatus();
+                context.RefreshPolygon(context.drawnPolygon);
+            }
+            else
+            {
 
-            this.Close();
+                context.oldPolygon = new GKPolygon(context.drawnPolygon);
+                target.ClearStatus();
+
+                target.ForceVertical();
+                context.RepairAndRefreshPolygon(context.oldPolygon, context.drawnPolygon, target);
+            }
+            Close();
         }
 
         private void forceHorizontal_Click(object sender, RoutedEventArgs e)
         {
-            target.ForceHorizontal();
-            context.RepairAndRefreshPolygon(context.drawnPolygon, target);
+            if (target.state == EdgeState.Horizontal)
+            {
+                target.ClearStatus();
+                context.RefreshPolygon(context.drawnPolygon);
+            }
+            else
+            {
+                context.oldPolygon = new GKPolygon(context.drawnPolygon);
+                target.ClearStatus();
 
-            this.Close();
+                target.ForceHorizontal();
+                context.RepairAndRefreshPolygon(context.oldPolygon, context.drawnPolygon, target);
+            }
+            Close();
 
         }
     }

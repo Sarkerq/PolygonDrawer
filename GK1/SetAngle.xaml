@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK1"
         mc:Ignorable="d"
-        Title="SetAngle" Height="180" Width="300" Topmost="True">
+        Title="SetAngle" Height="180" Width="320" Topmost="True">
 	<Grid>
-		<TextBox x:Name="degrees" Height="40" Margin="120,25,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="97" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-		<Label Content="Force angle to be:" HorizontalAlignment="Left" Height="40" Margin="10,25,0,0" VerticalAlignment="Top" Width="110"/>
-		<Label Content="degrees" HorizontalAlignment="Left" Height="40" Margin="220,25,0,0" VerticalAlignment="Top" Width="60"/>
-		<Button x:Name="confirm" Content="OK" HorizontalAlignment="Left" Height="30" Margin="120,90,0,0" VerticalAlignment="Top" Width="60" Click="confirm_Click"/>
+		<TextBox x:Name="degrees" Height="27" Margin="130,20,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="42" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+		<Label Content="Force angle to be:" HorizontalAlignment="Left" Height="40" Margin="20,20,0,0" VerticalAlignment="Top" Width="110"/>
+		<Label Content="degrees" HorizontalAlignment="Left" Height="40" Margin="175,20,0,0" VerticalAlignment="Top" Width="60"/>
+		<Button x:Name="confirm" Content="OK" HorizontalAlignment="Left" Height="30" Margin="240,20,0,0" VerticalAlignment="Top" Width="60" Click="confirm_Click"/>
+		<Button x:Name="deleteVertice" Content="Delete this vertice" HorizontalAlignment="Left" Height="30" Margin="70,100,0,0" VerticalAlignment="Top" Width="180" Click="deleteVertice_Click" />
+		<Button x:Name="unsetAngle" Content="Unset angle" HorizontalAlignment="Left" Height="30" Margin="70,60,0,0" VerticalAlignment="Top" Width="180" Click="unsetAngle_Click"/>
 	</Grid>
 </Window>

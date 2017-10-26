@@ -26,15 +26,17 @@ namespace GK1
             InitializeComponent();
             target = _target;
             context = _context;
+            if (target.fixedAngle) unsetAngle.Visibility = Visibility.Visible;
         }
 
         private void confirm_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                context.oldPolygon = new GKPolygon(context.drawnPolygon);
                 double angle = ParseDouble(degrees.Text) * Math.PI / 180;
-                context.drawnPolygon.ForceAngle(target, angle, VerticeFix.Left);
-                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
+                context.drawnPolygon.ForceAngle(target, angle);
+                context.RepairAndRefreshPolygon(context.oldPolygon, context.drawnPolygon, target);
 
                 this.Close();
             }
@@ -51,6 +53,23 @@ namespace GK1
             else
                 throw new ArgumentException();
 
+        }
+
+
+
+        private void deleteVertice_Click(object sender, RoutedEventArgs e)
+        {
+            context.drawnPolygon.deleteVertice(target);
+            context.RefreshPolygon(context.drawnPolygon);
+            this.Close();
+        }
+
+        private void unsetAngle_Click(object sender, RoutedEventArgs e)
+        {
+            target.fixedAngleValue = 0;
+            target.fixedAngle = false;
+            context.RefreshPolygon(context.drawnPolygon);
+            this.Close();
         }
     }
 }

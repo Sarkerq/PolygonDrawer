@@ -7,6 +7,12 @@ using System.Windows;
 
 namespace GK1
 {
+    public enum EdgeState
+    {
+        Horizontal,
+        Vertical,
+        None
+    }
     public class Edge
     {
         public Vertice v1, v2;
@@ -58,6 +64,12 @@ namespace GK1
             state = EdgeState.Vertical;
 
         }
+
+        internal void ClearStatus()
+        {
+            state = EdgeState.None;
+        }
+
         internal void ForceHorizontal()
         {
             Point left = v1.coords;

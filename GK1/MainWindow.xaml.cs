@@ -26,6 +26,8 @@ namespace GK1
         BitmapSource bitmap;
         public Carbon visuals = new Carbon();
         public GKPolygon drawnPolygon;
+        public GKPolygon oldPolygon;
+
         Edge currentlyedgeDragged;
         Vector mouseToVertice1;
         Vector mouseToVertice2;
@@ -42,16 +44,12 @@ namespace GK1
         {
             InitializeComponent();
             drawnPolygon = new GKPolygon(visuals);
-
+            oldPolygon = new GKPolygon(visuals);
             UpdateScreen();
 
         }
 
-        internal void RepairAndRefreshPolygon(GKPolygon drawnPolygon, Vertice target)
-        {
-            int index = drawnPolygon.vertices.IndexOf(target);
-            RepairAndRefreshPolygon(drawnPolygon, index);
-        }
+
 
         void UpdateScreen()
         {
@@ -144,30 +142,43 @@ namespace GK1
         }
 
 
-
-
-        public void RepairAndRefreshPolygon(GKPolygon polygon, int changedVerticeIndex)
+        public void RepairAndRefreshPolygon(GKPolygon old, GKPolygon current, Edge changedEdge)
         {
-            polygon.RepairVertices(changedVerticeIndex);
-            RefreshPolygon(polygon);
-            UpdateScreen();
+
+            if (current.RepairVertices(changedEdge))
+            {
+                RefreshPolygon(current);
+            }
+            else
+            {
+                RefreshPolygon(old);
+                current = old;
+                //MessageBox.Show("You can't do this change!","Operation failed",MessageBoxButton.OK,MessageBoxImage.Warning);
+            }
+
         }
-        public void RefreshPolygon(GKPolygon polygon)
+        public void RepairAndRefreshPolygon(GKPolygon old, GKPolygon current, Vertice target)
+        {
+            int index = drawnPolygon.vertices.IndexOf(target);
+            RepairAndRefreshPolygon(old, current, index);
+        }
+        public void RepairAndRefreshPolygon(GKPolygon old , GKPolygon current, int changedVerticeIndex)
+        {
+            if (current.RepairVertices(changedVerticeIndex))
+            {
+                RefreshPolygon(current);
+            }
+            else
+            {
+                RefreshPolygon(old);
+                current = old;
+            }
+            }
+            public void RefreshPolygon(GKPolygon polygon)
         {
             visuals.redrawPolygon(polygon);
             UpdateScreen();
         }
-
-
-
-        public void RepairAndRefreshPolygon(GKPolygon polygon, Edge changedEdge)
-        {
-
-            polygon.RepairVertices(changedEdge);
-            RefreshPolygon(drawnPolygon);
-        }
-
-
 
 
         private void ClearCanvas()
@@ -194,19 +205,22 @@ namespace GK1
         {
             if (dragged)
             {
+                oldPolygon = new GKPolygon(drawnPolygon);
                 drawnPolygon.vertices[currentlyDragged].coords.X = e.GetPosition(drawingScreen).X;
                 drawnPolygon.vertices[currentlyDragged].coords.Y = e.GetPosition(drawingScreen).Y;
-                RepairAndRefreshPolygon(drawnPolygon, currentlyDragged);
+                RepairAndRefreshPolygon(oldPolygon, drawnPolygon, currentlyDragged);
                 dragged = false;
                 return;
             }
             if (edgeDragged)
             {
+                oldPolygon = new GKPolygon(drawnPolygon);
+
                 currentlyedgeDragged.v1.coords.X = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
                 currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                RepairAndRefreshPolygon(drawnPolygon, currentlyedgeDragged);
+                RepairAndRefreshPolygon(oldPolygon, drawnPolygon, currentlyedgeDragged);
                 edgeDragged = false;
                 return;
             }
@@ -233,18 +247,22 @@ namespace GK1
         {
             if (dragged)
             {
+                oldPolygon = new GKPolygon(drawnPolygon);
+
                 drawnPolygon.vertices[currentlyDragged].coords.X = Mouse.GetPosition(drawingScreen).X;
                 drawnPolygon.vertices[currentlyDragged].coords.Y = Mouse.GetPosition(drawingScreen).Y;
-                RepairAndRefreshPolygon(drawnPolygon, currentlyDragged);
+                RepairAndRefreshPolygon(oldPolygon, drawnPolygon, currentlyDragged);
                 return;
             }
             if (edgeDragged)
             {
+                oldPolygon = new GKPolygon(drawnPolygon);
+
                 currentlyedgeDragged.v1.coords.X = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
                 currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                RepairAndRefreshPolygon(drawnPolygon, currentlyedgeDragged);
+                RepairAndRefreshPolygon(oldPolygon, drawnPolygon, currentlyedgeDragged);
 
                 return;
             }
@@ -308,17 +326,8 @@ namespace GK1
 
 
     }
-    public enum VerticeFix
-    {
-        Left,
-        Right
-    }
-    public enum EdgeState
-    {
-        Horizontal,
-        Vertical,
-        None
-    }
+
+
 
 
 

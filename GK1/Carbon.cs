@@ -26,7 +26,10 @@ namespace GK1
             rawStride = (MAX_WIDTH * pf.BitsPerPixel + 7) / 8;
             pixelData = new byte[rawStride * MAX_HEIGHT];
             pixelOwner = new Edge[rawStride * MAX_HEIGHT];
-
+            for (int i = 0; i < pixelData.Length; i++)
+            {
+                pixelData[i] = 255;
+            }
         }
         public void drawEdge(Edge e, Color color)
         {
@@ -83,12 +86,18 @@ namespace GK1
                     pixelOwner[xIndex + yIndex] = owner;
             }
         }
-        public void drawVertice(Vertice v)
+        public void drawVertice(Vertice v, Color border, Color middle)
         {
             for (int y = (int)v.coords.Y - (int)Global.verticeRadius; y < (int)v.coords.Y + (int)Global.verticeRadius; y++)
                 for (int x = (int)v.coords.X - (int)Global.verticeRadius; x < (int)v.coords.X + (int)Global.verticeRadius; x++)
-
-                    SetPixel(x, y, Colors.Green);
+                {
+                    if (Math.Sqrt(Math.Pow(x - (int)v.coords.X, 2) + Math.Pow(y - (int)v.coords.Y, 2)) <= Global.verticeRadius) SetPixel(x, y, border);
+                }
+            for (int y = (int)v.coords.Y - (int)(Global.verticeRadius / 1.2); y < (int)v.coords.Y + (int)(Global.verticeRadius / 1.2); y++)
+                for (int x = (int)v.coords.X - (int)(Global.verticeRadius / 1.2); x < (int)v.coords.X + (int)(Global.verticeRadius / 1.2); x++)
+                {
+                    if (Math.Sqrt(Math.Pow(x - (int)v.coords.X, 2) + Math.Pow(y - (int)v.coords.Y, 2)) <= Global.verticeRadius / 1.2) SetPixel(x, y, middle);
+                }
         }
         public void redrawPolygon(GKPolygon drawnPolygon)
         {
@@ -101,19 +110,33 @@ namespace GK1
 
                 for (int i = 0; i < drawnPolygon.edges.Count; i++)
                 {
-                    drawEdge(drawnPolygon.edges[i], Colors.Red);
+                    drawEdge(drawnPolygon.edges[i], Colors.DarkGray);
                 }
                 for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(drawnPolygon.vertices[i]);
+                    drawVertice(drawnPolygon.vertices[i], Colors.Black,Colors.White);
 
-
+                for(int i = 0;i<drawnPolygon.vertices.Count;i++)
+                {
+                    if (drawnPolygon.vertices[i].fixedAngle)
+                        drawVertice(drawnPolygon.vertices[i], Colors.Black, Colors.Red);
+                }
             }
 
         }
+
+        private void drawFixedVertice(Vertice vertice)
+        {
+            throw new NotImplementedException();
+        }
+
         public void clear()
         {
             pixelData = new byte[rawStride * height];
             pixelOwner = new Edge[rawStride * height];
+            for(int i =0;i<pixelData.Length;i++)
+            {
+                pixelData[i] = 255;
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace GK1
 {
     static class Global
     {
-        public const double verticeRadius = 9;
+        public const double verticeRadius = 12;
         public const int lineWidth = 3;
         public const double pixelEpsilon = 0.5;
         public const double angleEpsilon = 0.5 * Math.PI / 180;
