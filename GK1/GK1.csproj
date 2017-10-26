@@ -58,6 +58,7 @@
     <Compile Include="EdgeSettings.xaml.cs">
       <DependentUpon>EdgeSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Global.cs" />
     <Compile Include="Polar.cs" />
     <Compile Include="SetAngle.xaml.cs">
       <DependentUpon>SetAngle.xaml</DependentUpon>

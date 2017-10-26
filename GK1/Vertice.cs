@@ -10,8 +10,10 @@ namespace GK1
 {
     public enum VerticeState
     {
-        Clockwise,
-        CounterClockwise,
+        Left,
+        Right,
+        Top,
+        Bottom,
         None
     }
     public class Vertice

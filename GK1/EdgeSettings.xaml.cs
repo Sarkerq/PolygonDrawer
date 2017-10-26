@@ -30,7 +30,7 @@ namespace GK1
         private void newVertice_Click(object sender, RoutedEventArgs e)
         {
             context.putVerticeInTheMiddle(target);
-            context.repairAndRedrawPolygon(context.drawnPolygon);
+            context.redrawPolygon(context.drawnPolygon);
 
             this.Close();
         }
@@ -38,7 +38,7 @@ namespace GK1
         private void forceVertical_Click(object sender, RoutedEventArgs e)
         {
             context.forceVertical(target);
-            context.repairAndRedrawPolygon(context.drawnPolygon);
+            context.repairAndRedrawPolygon(context.drawnPolygon, target);
 
             this.Close();
         }
@@ -46,7 +46,7 @@ namespace GK1
         private void forceHorizontal_Click(object sender, RoutedEventArgs e)
         {
             context.forceHorizontal(target);
-            context.repairAndRedrawPolygon(context.drawnPolygon);
+            context.repairAndRedrawPolygon(context.drawnPolygon, target);
 
             this.Close();
 
