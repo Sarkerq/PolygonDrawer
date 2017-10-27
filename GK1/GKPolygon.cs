@@ -130,7 +130,7 @@ namespace GK1
             if (v.fixedAngle)
             {
                 if(mutable == previousVertice(v))
-                    ForceAngle(mutable,v,nextVertice(v), v.fixedAngleValue);
+                    ForceReverseAngle(mutable, v, nextVertice(v), v.fixedAngleValue);
                 else
                     ForceAngle(previousVertice(v), v, mutable, v.fixedAngleValue);
 
@@ -145,6 +145,9 @@ namespace GK1
             }
 
         }
+
+
+
         internal bool IsCorrectVertice(Vertice v, bool front)
         {
             Edge tested;
@@ -218,6 +221,14 @@ namespace GK1
             Polar pol = new Polar(target.coords, Global.Distance(target.coords, movable.coords), angle + fixedEdgeAngle);
             movable.coords = pol.toCartesian();
 
+        }
+        private void ForceReverseAngle(Vertice movable, Vertice target, Vertice fixated, double angle)
+        {
+            target.fixedAngle = true;
+            target.fixedAngleValue = angle;
+            double fixedEdgeAngle = Global.AngleAgainstXAxis(target.coords, fixated.coords);
+            Polar pol = new Polar(target.coords, Global.Distance(target.coords, movable.coords),  - angle + fixedEdgeAngle);
+            movable.coords = pol.toCartesian();
         }
         //public void ForceAngle(Vertice target, double angle, Edge movable = null)
         //{
