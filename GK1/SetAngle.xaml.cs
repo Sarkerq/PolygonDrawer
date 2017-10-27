@@ -40,7 +40,7 @@ namespace GK1
             {
                 context.oldPolygon = new GKPolygon(context.drawnPolygon);
                 double angle = ParseDouble(degrees.Text) * Math.PI / 180;
-                context.drawnPolygon.ForceAngle(target, angle);
+                context.drawnPolygon.ForceAngle(context.drawnPolygon.previousVertice(target), target, context.drawnPolygon.nextVertice(target), angle );
                 context.RepairAndRefreshPolygon(context.oldPolygon, context.drawnPolygon, target);
 
                 this.Close();

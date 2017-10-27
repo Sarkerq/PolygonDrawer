@@ -129,7 +129,11 @@ namespace GK1
 
             if (v.fixedAngle)
             {
-                ForceAngle(v, v.fixedAngleValue, chosen);
+                if(mutable == previousVertice(v))
+                    ForceAngle(mutable,v,nextVertice(v), v.fixedAngleValue);
+                else
+                    ForceAngle(previousVertice(v), v, mutable, v.fixedAngleValue);
+
             }
             if (chosen.state == EdgeState.Horizontal)
             {
@@ -206,56 +210,65 @@ namespace GK1
             edges.Insert(indexEdge, new Edge(target.v1, newV));
             edges.Insert(indexEdge + 1, new Edge(newV, target.v2));
         }
-        public void ForceAngle(Vertice target, double angle, Edge movable = null)
+        public void ForceAngle(Vertice fixated, Vertice target, Vertice movable, double angle)
         {
-            Vertice left, right;
-            Edge[] pair = new Edge[2];
-            int i = 0;
             target.fixedAngle = true;
             target.fixedAngleValue = angle;
-            foreach (Edge e in edges)
-            {
-                if (e.v1 == target || e.v2 == target)
-                {
-                    pair[i] = e;
-                    i++;
-                }
-            }
-            if (pair[0].v1 == target) left = pair[0].v2;
-            else left = pair[0].v1;
-            if (pair[1].v1 == target) right = pair[1].v2;
-            else right = pair[1].v1;
+            double fixedEdgeAngle = Global.AngleAgainstXAxis(target.coords, fixated.coords);
+            Polar pol = new Polar(target.coords, Global.Distance(target.coords, movable.coords), angle + fixedEdgeAngle);
+            movable.coords = pol.toCartesian();
 
-            //double originalAngle = getAngle(left, target, right);
-            //if(originalAngle < 0)
-            //{
-            //    Vertice tmp = left;
-            //    left = right;
-            //    right = tmp;
-            //}
-
-            if (movable == pair[1])
-            {
-                double originalLeftAngle = Global.AngleAgainstXAxis(target.coords, left.coords);
-                Polar pol = new Polar(target.coords, Global.Distance(target.coords, right.coords), angle + originalLeftAngle);
-                Point result = pol.toCartesian();
-                right.coords = result;
-            }
-            else
-            {
-                double originalRightAngle = Global.AngleAgainstXAxis(target.coords, right.coords);
-
-                Polar pol = new Polar(target.coords, Global.Distance(target.coords, left.coords), angle + originalRightAngle);
-                Point result = pol.toCartesian();
-                left.coords = result;
-            }
-            if (!CorrectAngle(target))
-            {
-                Edge tmp = new Edge(left, right);
-                target.coords = Global.Mirror(target, tmp);
-                // if (!CorrectAngle(target)) throw new  SanityException();
-            }
         }
+        //public void ForceAngle(Vertice target, double angle, Edge movable = null)
+        //{
+        //    Vertice left, right;
+        //    Edge[] pair = new Edge[2];
+        //    int i = 0;
+        //    target.fixedAngle = true;
+        //    target.fixedAngleValue = angle;
+        //    foreach (Edge e in edges)
+        //    {
+        //        if (e.v1 == target || e.v2 == target)
+        //        {
+        //            pair[i] = e;
+        //            i++;
+        //        }
+        //    }
+        //    if (pair[0].v1 == target) left = pair[0].v2;
+        //    else left = pair[0].v1;
+        //    if (pair[1].v1 == target) right = pair[1].v2;
+        //    else right = pair[1].v1;
+
+        //    //double originalAngle = getAngle(left, target, right);
+        //    //if(originalAngle < 0)
+        //    //{
+        //    //    Vertice tmp = left;
+        //    //    left = right;
+        //    //    right = tmp;
+        //    //}
+
+        //    if (movable == pair[1])
+        //    {
+        //        double originalLeftAngle = Global.AngleAgainstXAxis(target.coords, left.coords);
+        //        Polar pol = new Polar(target.coords, Global.Distance(target.coords, right.coords), angle + originalLeftAngle);
+        //        Point result = pol.toCartesian();
+        //        right.coords = result;
+        //    }
+        //    else
+        //    {
+        //        double originalRightAngle = Global.AngleAgainstXAxis(target.coords, right.coords);
+
+        //        Polar pol = new Polar(target.coords, Global.Distance(target.coords, left.coords), angle + originalRightAngle);
+        //        Point result = pol.toCartesian();
+        //        left.coords = result;
+        //    }
+        //    if (!CorrectAngle(target))
+        //    {
+        //        Edge tmp = new Edge(left, right);
+        //        target.coords = Global.Mirror(target, tmp);
+        //        // if (!CorrectAngle(target)) throw new  SanityException();
+        //    }
+        //}
 
 
         internal bool canForce(Edge e, EdgeState state)
