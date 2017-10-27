@@ -58,11 +58,10 @@ namespace GK1
                     MessageBox.Show("You can't force two consecutive edges to be vertical or set vertical to fixed angle vertice!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                context.oldPolygon = new GKPolygon(context.drawnPolygon);
                 target.ClearStatus();
 
                 target.ForceVertical();
-                context.RepairAndRefreshPolygon(context.oldPolygon, context.drawnPolygon, target);
+                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
             }
             Close();
         }
@@ -81,11 +80,10 @@ namespace GK1
                     MessageBox.Show("You can't force two consecutive edges to be horizontal or set horizontal to fixed angle vertice!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                context.oldPolygon = new GKPolygon(context.drawnPolygon);
                 target.ClearStatus();
 
                 target.ForceHorizontal();
-                context.RepairAndRefreshPolygon(context.oldPolygon, context.drawnPolygon, target);
+                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
             }
             Close();
 

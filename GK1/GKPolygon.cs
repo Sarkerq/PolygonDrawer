@@ -59,8 +59,7 @@ namespace GK1
                     if (!first) break;
                 }
                 else RepairVertice(v, true);
-
-                //if (!IsCorrectVertice(v, true)) throw new SanityException();
+                
 
                 iter = (iter + 1) % vertices.Count;
                 first = false;
@@ -77,8 +76,6 @@ namespace GK1
                     if (!first) break;
                 }
                 else RepairVertice(v, false);
-                //if (!IsCorrectVertice(v, false)) throw new SanityException();
-                //if (!IsCorrectVertice(v, true)) throw new SanityException();
 
                 newIter = (newIter - 1 + vertices.Count) % vertices.Count;
                 first = false;
@@ -151,11 +148,19 @@ namespace GK1
         internal bool IsCorrectVertice(Vertice v, bool front)
         {
             Edge tested;
+            Vertice farAngleCheck;
             if (front)
+            {
                 tested = nextEdge(v);
+                farAngleCheck = nextVertice(v);
+            }
             else
+            {
+                farAngleCheck = previousVertice(v);
+
                 tested = previousEdge(v);
-            return CorrectAngle(v) && tested.CorrectHorizontal() && tested.CorrectVertical();
+            }
+            return CorrectAngle(v) && CorrectAngle(farAngleCheck) && tested.CorrectHorizontal() && tested.CorrectVertical();
         }
 
         private bool CorrectAngle(Vertice v)
@@ -230,56 +235,6 @@ namespace GK1
             Polar pol = new Polar(target.coords, Global.Distance(target.coords, movable.coords),  - angle + fixedEdgeAngle);
             movable.coords = pol.toCartesian();
         }
-        //public void ForceAngle(Vertice target, double angle, Edge movable = null)
-        //{
-        //    Vertice left, right;
-        //    Edge[] pair = new Edge[2];
-        //    int i = 0;
-        //    target.fixedAngle = true;
-        //    target.fixedAngleValue = angle;
-        //    foreach (Edge e in edges)
-        //    {
-        //        if (e.v1 == target || e.v2 == target)
-        //        {
-        //            pair[i] = e;
-        //            i++;
-        //        }
-        //    }
-        //    if (pair[0].v1 == target) left = pair[0].v2;
-        //    else left = pair[0].v1;
-        //    if (pair[1].v1 == target) right = pair[1].v2;
-        //    else right = pair[1].v1;
-
-        //    //double originalAngle = getAngle(left, target, right);
-        //    //if(originalAngle < 0)
-        //    //{
-        //    //    Vertice tmp = left;
-        //    //    left = right;
-        //    //    right = tmp;
-        //    //}
-
-        //    if (movable == pair[1])
-        //    {
-        //        double originalLeftAngle = Global.AngleAgainstXAxis(target.coords, left.coords);
-        //        Polar pol = new Polar(target.coords, Global.Distance(target.coords, right.coords), angle + originalLeftAngle);
-        //        Point result = pol.toCartesian();
-        //        right.coords = result;
-        //    }
-        //    else
-        //    {
-        //        double originalRightAngle = Global.AngleAgainstXAxis(target.coords, right.coords);
-
-        //        Polar pol = new Polar(target.coords, Global.Distance(target.coords, left.coords), angle + originalRightAngle);
-        //        Point result = pol.toCartesian();
-        //        left.coords = result;
-        //    }
-        //    if (!CorrectAngle(target))
-        //    {
-        //        Edge tmp = new Edge(left, right);
-        //        target.coords = Global.Mirror(target, tmp);
-        //        // if (!CorrectAngle(target)) throw new  SanityException();
-        //    }
-        //}
 
 
         internal bool canForce(Edge e, EdgeState state)
@@ -289,23 +244,4 @@ namespace GK1
 
     }
 
-    [Serializable]
-    internal class SanityException : Exception
-    {
-        public SanityException()
-        {
-        }
-
-        public SanityException(string message) : base(message)
-        {
-        }
-
-        public SanityException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected SanityException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-    }
 }

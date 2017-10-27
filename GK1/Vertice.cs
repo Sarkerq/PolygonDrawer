@@ -42,7 +42,7 @@ namespace GK1
             fixedHorizontal = v.fixedHorizontal;
             fixedAngle = v.fixedAngle;
             fixedAngleValue = v.fixedAngleValue;
-            coords = v.coords;
+            coords = new Point(v.coords.X, v.coords.Y);
         }
         public void ClearStatus()
         {
