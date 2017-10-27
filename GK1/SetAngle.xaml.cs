@@ -40,7 +40,7 @@ namespace GK1
             {
                 double angle = ParseDouble(degrees.Text) * Math.PI / 180;
                 context.drawnPolygon.ForceAngle(context.drawnPolygon.previousVertice(target), target, context.drawnPolygon.nextVertice(target), angle );
-                context.RepairAndRefreshPolygon( context.drawnPolygon, target);
+                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
 
                 this.Close();
             }
@@ -64,7 +64,7 @@ namespace GK1
         private void deleteVertice_Click(object sender, RoutedEventArgs e)
         {
             context.drawnPolygon.deleteVertice(target);
-            context.RefreshPolygon(context.drawnPolygon);
+            context.RefreshTwoPolygon(context.drawnPolygon, context.auxiliaryPolygon);
             this.Close();
         }
 
@@ -72,7 +72,7 @@ namespace GK1
         {
             target.fixedAngleValue = 0;
             target.fixedAngle = false;
-            context.RefreshPolygon(context.drawnPolygon);
+            context.RefreshTwoPolygon(context.drawnPolygon, context.auxiliaryPolygon);
             this.Close();
         }
     }

@@ -39,7 +39,7 @@ namespace GK1
         private void newVertice_Click(object sender, RoutedEventArgs e)
         {
             context.drawnPolygon.PutVerticeInTheMiddle(target);
-            context.RefreshPolygon(context.drawnPolygon);
+            context.RefreshTwoPolygon(context.drawnPolygon,context.auxiliaryPolygon);
 
             Close();
         }
@@ -49,19 +49,20 @@ namespace GK1
             if (target.state == EdgeState.Vertical)
             {
                 target.ClearStatus();
-                context.RefreshPolygon(context.drawnPolygon);
+                context.RefreshTwoPolygon(context.drawnPolygon, context.auxiliaryPolygon);
             }
             else
             {
-                if(!context.drawnPolygon.canForce(target, EdgeState.Vertical))
+                if (!context.drawnPolygon.canForce(target, EdgeState.Vertical))
                 {
                     MessageBox.Show("You can't force two consecutive edges to be vertical or set vertical to fixed angle vertice!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
                 target.ClearStatus();
 
                 target.ForceVertical();
-                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
+                context.RepairAndRefreshPolygon( context.drawnPolygon, target);
             }
             Close();
         }
@@ -71,7 +72,7 @@ namespace GK1
             if (target.state == EdgeState.Horizontal)
             {
                 target.ClearStatus();
-                context.RefreshPolygon(context.drawnPolygon);
+                context.RefreshTwoPolygon(context.drawnPolygon, context.auxiliaryPolygon);
             }
             else
             {
@@ -80,10 +81,11 @@ namespace GK1
                     MessageBox.Show("You can't force two consecutive edges to be horizontal or set horizontal to fixed angle vertice!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
                 target.ClearStatus();
 
                 target.ForceHorizontal();
-                context.RepairAndRefreshPolygon(context.drawnPolygon, target);
+                context.RepairAndRefreshPolygon( context.drawnPolygon, target);
             }
             Close();
 

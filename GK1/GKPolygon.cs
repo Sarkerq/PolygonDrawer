@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Drawing;
 
 namespace GK1
 {
@@ -210,7 +211,7 @@ namespace GK1
                 if (target.v1 == vertices[i] || target.v2 == vertices[i]) indexVert = i;
                 if (target == edges[i]) indexEdge = i;
             }
-            Point newVerticeCoords = new Point((target.v1.coords.X + target.v2.coords.X) / 2,
+            System.Windows.Point newVerticeCoords = new System.Windows.Point((target.v1.coords.X + target.v2.coords.X) / 2,
                                                 (target.v1.coords.Y + target.v2.coords.Y) / 2);
             Vertice newV = new Vertice(newVerticeCoords);
             vertices.Insert(indexVert, newV);
