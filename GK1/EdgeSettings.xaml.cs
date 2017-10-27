@@ -55,7 +55,7 @@ namespace GK1
             {
                 if(!context.drawnPolygon.canForce(target, EdgeState.Vertical))
                 {
-                    MessageBox.Show("You can't force two consecutive edges to be vertical!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("You can't force two consecutive edges to be vertical or set vertical to fixed angle vertice!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 context.oldPolygon = new GKPolygon(context.drawnPolygon);
@@ -78,7 +78,7 @@ namespace GK1
             {
                 if (!context.drawnPolygon.canForce(target, EdgeState.Horizontal))
                 {
-                    MessageBox.Show("You can't force two consecutive edges to be horizontal!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("You can't force two consecutive edges to be horizontal or set horizontal to fixed angle vertice!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 context.oldPolygon = new GKPolygon(context.drawnPolygon);

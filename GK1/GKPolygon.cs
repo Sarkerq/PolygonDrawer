@@ -34,6 +34,10 @@ namespace GK1
             edges.Add(new Edge(vertices.Last(), vertices.First()));
         }
 
+        internal bool canSetAngle(Vertice target)
+        {
+            return (nextEdge(target).state == EdgeState.None && previousEdge(target).state == EdgeState.None);
+        }
 
         public bool RepairVertices(Edge changedEdge)
         {
@@ -249,14 +253,14 @@ namespace GK1
             {
                 Edge tmp = new Edge(left, right);
                 target.coords = Global.Mirror(target, tmp);
-               // if (!CorrectAngle(target)) throw new  SanityException();
+                // if (!CorrectAngle(target)) throw new  SanityException();
             }
         }
 
 
         internal bool canForce(Edge e, EdgeState state)
         {
-            return (nextEdge(e).state != state && previousEdge(e).state != state);
+            return (nextEdge(e).state != state && previousEdge(e).state != state && !e.v1.fixedAngle && !e.v2.fixedAngle);
         }
 
     }

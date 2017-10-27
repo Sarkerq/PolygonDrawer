@@ -31,6 +31,11 @@ namespace GK1
 
         private void confirm_Click(object sender, RoutedEventArgs e)
         {
+            if (!context.drawnPolygon.canSetAngle(target))
+            {
+                MessageBox.Show("You can't fix angle with neighbouring fixed horizontal or vertical edge!", "Settings error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             try
             {
                 context.oldPolygon = new GKPolygon(context.drawnPolygon);

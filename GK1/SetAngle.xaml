@@ -12,6 +12,6 @@
 		<Label Content="degrees" HorizontalAlignment="Left" Height="40" Margin="175,20,0,0" VerticalAlignment="Top" Width="60"/>
 		<Button x:Name="confirm" Content="OK" HorizontalAlignment="Left" Height="30" Margin="240,20,0,0" VerticalAlignment="Top" Width="60" Click="confirm_Click"/>
 		<Button x:Name="deleteVertice" Content="Delete this vertice" HorizontalAlignment="Left" Height="30" Margin="70,100,0,0" VerticalAlignment="Top" Width="180" Click="deleteVertice_Click" />
-		<Button x:Name="unsetAngle" Content="Unset angle" HorizontalAlignment="Left" Height="30" Margin="70,60,0,0" VerticalAlignment="Top" Width="180" Click="unsetAngle_Click"/>
+		<Button x:Name="unsetAngle" Content="Unset angle" HorizontalAlignment="Left" Height="30" Margin="70,60,0,0" VerticalAlignment="Top" Width="180" Click="unsetAngle_Click" Visibility="Collapsed"/>
 	</Grid>
 </Window>
