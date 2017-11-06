@@ -57,22 +57,21 @@
     </ApplicationDefinition>
     <Compile Include="Carbon.cs" />
     <Compile Include="Edge.cs" />
-    <Compile Include="EdgeSettings.xaml.cs">
+    <Compile Include="Windows\EdgeSettings.xaml.cs">
       <DependentUpon>EdgeSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="GKPolygon.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Polar.cs" />
-    <Compile Include="SetAngle.xaml.cs">
+    <Compile Include="Windows\SetAngle.xaml.cs">
       <DependentUpon>SetAngle.xaml</DependentUpon>
     </Compile>
     <Compile Include="Vertice.cs" />
-    <Compile Include="WU.cs" />
-    <Page Include="EdgeSettings.xaml">
+    <Page Include="Windows\EdgeSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -80,11 +79,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="SetAngle.xaml">
+    <Page Include="Windows\SetAngle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

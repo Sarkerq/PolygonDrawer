@@ -8,8 +8,6 @@
         Title="EdgeSettings" Height="280" Width="280" Topmost="True">
     <Grid>
 		<Button x:Name="newVertice" Content="New vertice" HorizontalAlignment="Left" Height="40" Margin="60,40,0,0" VerticalAlignment="Top" Width="160" Click="newVertice_Click"/>
-		<Button x:Name="forceVertical" Content="Force vertical" HorizontalAlignment="Left" Height="40" Margin="60,100,0,0" VerticalAlignment="Top" Width="160" Click="forceVertical_Click"/>
-		<Button x:Name="forceHorizontal" Content="Force Horizontal" HorizontalAlignment="Left" Height="40" Margin="60,160,0,0" VerticalAlignment="Top" Width="160" Click="forceHorizontal_Click"/>
 
 	</Grid>
 </Window>

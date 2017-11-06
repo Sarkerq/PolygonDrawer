@@ -194,19 +194,8 @@ namespace GK1
         public void RepairAndRefreshBothPolygon(GKPolygon old, GKPolygon current, Edge changedEdge)
         {
 
-            if (current.RepairVertices(changedEdge))
-            {
-                RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
-            }
-            else
-            {
-                changedEdge.ClearStatus();
-                foreach (Edge e in current.edges)
-                {
-                    if (current.RepairVertices(changedEdge)) break;
-                }
-                RefreshThreePolygon(old, drawnPolygon, auxiliaryPolygon);
-            }
+            RefreshThreePolygon(old, drawnPolygon, auxiliaryPolygon);
+
 
         }
         public void RepairAndRefreshBothPolygon(GKPolygon old, GKPolygon current, Vertice target)
@@ -216,39 +205,12 @@ namespace GK1
         }
         public void RepairAndRefreshBothPolygon(GKPolygon old, GKPolygon current, int changedVerticeIndex)
         {
-            if (current.RepairVertices(changedVerticeIndex))
-            {
-                RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
-
-            }
-            else
-            {
-                drawnPolygon.vertices[changedVerticeIndex].ClearStatus();
-                while (!current.RepairVertices((changedVerticeIndex)))
-                {
-                    changedVerticeIndex = (changedVerticeIndex + 1) % current.vertices.Count;
-                }
-                RefreshThreePolygon(old, drawnPolygon, auxiliaryPolygon);
-
-            }
+            RefreshThreePolygon(old, drawnPolygon, auxiliaryPolygon);
         }
         public void RepairAndRefreshPolygon(GKPolygon current, Edge changedEdge)
         {
 
-            if (current.RepairVertices(changedEdge))
-            {
-                RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
-            }
-            else
-            {
-                changedEdge.ClearStatus();
-                foreach (Edge e in current.edges)
-                {
-                    if (current.RepairVertices(changedEdge)) break;
-                }
-                RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
-            }
-
+            RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
         }
         public void RepairAndRefreshPolygon(GKPolygon current, Vertice target)
         {
@@ -257,19 +219,9 @@ namespace GK1
         }
         public void RepairAndRefreshPolygon(GKPolygon current, int changedVerticeIndex)
         {
-            if (current.RepairVertices(changedVerticeIndex))
-            {
-                RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
-            }
-            else
-            {
-                drawnPolygon.vertices[changedVerticeIndex].ClearStatus();
-                while (!current.RepairVertices((changedVerticeIndex)))
-                {
-                    changedVerticeIndex = (changedVerticeIndex + 1) % current.vertices.Count;
-                }
-                RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
-            }
+
+            RefreshTwoPolygon(drawnPolygon, auxiliaryPolygon);
+
         }
         public void RefreshThreePolygon(GKPolygon old, GKPolygon current, GKPolygon auxiliary)
         {

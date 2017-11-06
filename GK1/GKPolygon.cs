@@ -9,11 +9,7 @@ using System.Drawing;
 
 namespace GK1
 {
-    public enum VerticeFix
-    {
-        Left,
-        Right
-    }
+
     public class GKPolygon
     {
         public List<Vertice> vertices = new List<Vertice>();
@@ -35,56 +31,9 @@ namespace GK1
             edges.Add(new Edge(vertices.Last(), vertices.First()));
         }
 
-        internal bool canSetAngle(Vertice target)
-        {
-            return (nextEdge(target).state == EdgeState.None && previousEdge(target).state == EdgeState.None);
-        }
 
-        public bool RepairVertices(Edge changedEdge)
-        {
-            return RepairVertices(vertices.IndexOf(changedEdge.v1)) && RepairVertices(vertices.IndexOf(changedEdge.v2));
 
-        }
-
-        public bool RepairVertices(int changedVerticeIndex)
-        {
-            bool[] verticeFixed = new bool[vertices.Count];
-            int iter = changedVerticeIndex;
-            bool first = true;
-            // vertices following
-            while (first || iter != changedVerticeIndex)
-            {
-                Vertice v = vertices[iter];
-                if (IsCorrectVertice(v, true))
-                {
-                    if (!first) break;
-                }
-                else RepairVertice(v, true);
-                
-
-                iter = (iter + 1) % vertices.Count;
-                first = false;
-
-            }
-            if (!first && iter == changedVerticeIndex) return false;
-            int newIter = changedVerticeIndex;
-            first = true;
-            while (first || newIter != iter)
-            {
-                Vertice v = vertices[newIter];
-                if (IsCorrectVertice(v, false))
-                {
-                    if (!first) break;
-                }
-                else RepairVertice(v, false);
-
-                newIter = (newIter - 1 + vertices.Count) % vertices.Count;
-                first = false;
-
-            }
-            if (!first && iter == newIter) return false;
-            return true;
-        }
+ 
 
         internal void deleteVertice(Vertice target)
         {
@@ -113,62 +62,7 @@ namespace GK1
 
         }
 
-        private void RepairVertice(Vertice v, bool front)
-        {
 
-            Edge chosen;
-            if (front)
-                chosen = nextEdge(v);
-            else
-                chosen = previousEdge(v);
-
-            Vertice mutable = chosen.v1;
-            if (mutable == v) mutable = chosen.v2;
-
-            if (v.fixedAngle)
-            {
-                if(mutable == previousVertice(v))
-                    ForceReverseAngle(mutable, v, nextVertice(v), v.fixedAngleValue);
-                else
-                    ForceAngle(previousVertice(v), v, mutable, v.fixedAngleValue);
-
-            }
-            if (chosen.state == EdgeState.Horizontal)
-            {
-                chosen.ForceHorizontal(mutable);
-            }
-            if (chosen.state == EdgeState.Vertical)
-            {
-                chosen.ForceVertical(mutable);
-            }
-
-        }
-
-
-
-        internal bool IsCorrectVertice(Vertice v, bool front)
-        {
-            Edge tested;
-            Vertice farAngleCheck;
-            if (front)
-            {
-                tested = nextEdge(v);
-                farAngleCheck = nextVertice(v);
-            }
-            else
-            {
-                farAngleCheck = previousVertice(v);
-
-                tested = previousEdge(v);
-            }
-            return CorrectAngle(v) && CorrectAngle(farAngleCheck) && tested.CorrectHorizontal() && tested.CorrectVertical();
-        }
-
-        private bool CorrectAngle(Vertice v)
-        {
-            return !v.fixedAngle || Math.Abs(Global.GetAngle(previousVertice(v), v, nextVertice(v)) - v.fixedAngleValue) < Global.angleEpsilon;
-
-        }
         public Vertice nextVertice(Vertice v)
         {
             int index = vertices.IndexOf(v);
@@ -203,8 +97,6 @@ namespace GK1
         {
             int indexVert = 0;
             int indexEdge = 0;
-            target.v1.ClearStatus();
-            target.v1.ClearStatus();
 
             for (int i = 0; i < vertices.Count; i++)
             {
@@ -219,29 +111,7 @@ namespace GK1
             edges.Insert(indexEdge, new Edge(target.v1, newV));
             edges.Insert(indexEdge + 1, new Edge(newV, target.v2));
         }
-        public void ForceAngle(Vertice fixated, Vertice target, Vertice movable, double angle)
-        {
-            target.fixedAngle = true;
-            target.fixedAngleValue = angle;
-            double fixedEdgeAngle = Global.AngleAgainstXAxis(target.coords, fixated.coords);
-            Polar pol = new Polar(target.coords, Global.Distance(target.coords, movable.coords), angle + fixedEdgeAngle);
-            movable.coords = pol.toCartesian();
 
-        }
-        private void ForceReverseAngle(Vertice movable, Vertice target, Vertice fixated, double angle)
-        {
-            target.fixedAngle = true;
-            target.fixedAngleValue = angle;
-            double fixedEdgeAngle = Global.AngleAgainstXAxis(target.coords, fixated.coords);
-            Polar pol = new Polar(target.coords, Global.Distance(target.coords, movable.coords),  - angle + fixedEdgeAngle);
-            movable.coords = pol.toCartesian();
-        }
-
-
-        internal bool canForce(Edge e, EdgeState state)
-        {
-            return (nextEdge(e).state != state && previousEdge(e).state != state && !e.v1.fixedAngle && !e.v2.fixedAngle);
-        }
 
     }
 
