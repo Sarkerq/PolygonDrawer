@@ -33,7 +33,7 @@ namespace GK1
 
 
 
- 
+
 
         internal void deleteVertice(Vertice target)
         {
@@ -95,21 +95,28 @@ namespace GK1
         }
         public void PutVerticeInTheMiddle(Edge target)
         {
-            int indexVert = 0;
+            int indexVert1 = 0, indexVert2 = 0;
             int indexEdge = 0;
 
             for (int i = 0; i < vertices.Count; i++)
             {
-                if (target.v1 == vertices[i] || target.v2 == vertices[i]) indexVert = i;
+                if (target.v1 == vertices[i]) indexVert1 = i;
+                if (target.v2 == vertices[i]) indexVert2 = i;
                 if (target == edges[i]) indexEdge = i;
             }
             System.Windows.Point newVerticeCoords = new System.Windows.Point((target.v1.coords.X + target.v2.coords.X) / 2,
                                                 (target.v1.coords.Y + target.v2.coords.Y) / 2);
             Vertice newV = new Vertice(newVerticeCoords);
-            vertices.Insert(indexVert, newV);
-            edges.RemoveAt(indexEdge);
-            edges.Insert(indexEdge, new Edge(target.v1, newV));
-            edges.Insert(indexEdge + 1, new Edge(newV, target.v2));
+            if (Math.Abs(indexVert1 - indexVert2) == vertices.Count - 1)
+                vertices.Insert(vertices.Count, newV);
+            else
+                vertices.Insert((indexVert1 + indexVert2) / 2 + 1, newV);
+            edges = new List<Edge>();
+            for (int i = 0; i < vertices.Count - 1; i++)
+            {
+                edges.Add(new Edge(vertices[i], vertices[i + 1]));
+            }
+            edges.Add(new Edge(vertices.Last(), vertices.First()));
         }
 
 

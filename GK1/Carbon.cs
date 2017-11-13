@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace GK1
 {
@@ -24,8 +25,12 @@ namespace GK1
         public byte[] pixelData;
         public Edge[] pixelOwner;
         public Algorithm algorithm;
-        public Carbon()
+        public Image lineCarbon;
+        BitmapSource bitmap;
+
+        public Carbon(Image _lineCarbon)
         {
+            lineCarbon = _lineCarbon;
             algorithm = Algorithm.Bresenham;
             width = MAX_WIDTH;
             height = MAX_HEIGHT;
@@ -38,7 +43,12 @@ namespace GK1
                 pixelData[i] = 255;
             }
         }
-
+        public void UpdateScreen()
+        {
+            bitmap = BitmapSource.Create(width, height,
+                96, 96, pf, null, pixelData, rawStride);
+            lineCarbon.Source = bitmap;
+        }
 
         public void drawEdge(Edge e, Color color)
         {

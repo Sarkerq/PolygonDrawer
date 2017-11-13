@@ -41,8 +41,8 @@ namespace GK1
 
         private void deleteVertice_Click(object sender, RoutedEventArgs e)
         {
-            context.drawnPolygon.deleteVertice(target);
-            context.RefreshTwoPolygon(context.drawnPolygon, context.auxiliaryPolygon);
+            context.currentPolygon.deleteVertice(target);
+            context.RefreshPolygon(context.currentPolygon);
             this.Close();
         }
 
