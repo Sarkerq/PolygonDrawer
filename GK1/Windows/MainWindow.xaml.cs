@@ -157,7 +157,10 @@ namespace GK1
 
         public void RefreshPolygon(GKPolygon polygon)
         {
-            visuals.redrawPolygon(polygon);
+            if (polygon == currentPolygon)
+                visuals.redrawCurrentPolygon(polygon);
+            else
+                visuals.redrawPolygon(polygon);
         }
         public void RefreshAllPolygons(List<GKPolygon> polygons)
         {
@@ -332,6 +335,21 @@ namespace GK1
         {
 
             OnMovedPolygon(e);
+        }
+
+        private void drawingScreen_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            int currentPolygonIndex = polygons.IndexOf(currentPolygon);
+
+            if (e.Delta > 0)
+            {
+                currentPolygon = polygons[(currentPolygonIndex + 1) % polygons.Count];
+            }
+            else
+            {
+                currentPolygon = polygons[(currentPolygonIndex - 1 + polygons.Count) % polygons.Count];
+            }
+            RefreshAllPolygons(polygons);
         }
     }
 

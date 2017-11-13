@@ -203,6 +203,9 @@ namespace GK1
                 }
             }
         }
+
+
+
         private void SetPixel(double x, double y, double c, Color original, Edge owner)
         {
             int alpha = (int)(c * 255);
@@ -217,9 +220,9 @@ namespace GK1
             int yIndex = y * rawStride;
             if (x < width && x >= 0 && y < height && y >= 0)
             {
-                pixelData[xIndex + yIndex] = c.R;
+                pixelData[xIndex + yIndex] = c.B;
                 pixelData[xIndex + yIndex + 1] = c.G;
-                pixelData[xIndex + yIndex + 2] = c.B;
+                pixelData[xIndex + yIndex + 2] = c.R;
                 pixelData[xIndex + yIndex + 3] = c.A;
                 if (owner != null)
                     pixelOwner[xIndex + yIndex] = owner;
@@ -238,25 +241,31 @@ namespace GK1
                     if (Math.Sqrt(Math.Pow(x - (int)v.coords.X, 2) + Math.Pow(y - (int)v.coords.Y, 2)) <= Global.verticeRadius / 1.2) SetPixel(x, y, middle);
                 }
         }
-        public void redrawPolygon(GKPolygon drawnPolygon)
+        public void redrawPolygon(GKPolygon drawnPolygon, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
         {
             if (drawnPolygon.vertices.Count >= 1)
             {
+                Color edgeColor = _edgeColor == null ? Colors.DarkGray : (Color)_edgeColor;
+                Color verticeInsideColor = _verticeInsideColor == null ? Colors.White : (Color)_verticeInsideColor;
+                Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
 
                 Vertice first = drawnPolygon.vertices[0];
 
 
                 for (int i = 0; i < drawnPolygon.edges.Count; i++)
                 {
-                    drawEdge(drawnPolygon.edges[i], Colors.DarkGray);
+                    drawEdge(drawnPolygon.edges[i], edgeColor);
                 }
                 for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(drawnPolygon.vertices[i], Colors.Black, Colors.White);
+                    drawVertice(drawnPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
 
             }
 
         }
-
+        internal void redrawCurrentPolygon(GKPolygon polygon)
+        {
+            redrawPolygon(polygon, Colors.LightBlue, Colors.White, Colors.DarkBlue);
+        }
 
         public void clear()
         {
@@ -268,22 +277,5 @@ namespace GK1
             }
         }
 
-        internal void redrawOldPolygon(GKPolygon drawnPolygon)
-        {
-            if (drawnPolygon.vertices.Count >= 1)
-            {
-
-                Vertice first = drawnPolygon.vertices[0];
-
-
-                for (int i = 0; i < drawnPolygon.edges.Count; i++)
-                {
-                    drawEdge(drawnPolygon.edges[i], Colors.LightGray);
-                }
-                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(drawnPolygon.vertices[i], Colors.Black, Colors.White);
-            }
-
-        }
     }
 }
