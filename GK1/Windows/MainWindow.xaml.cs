@@ -25,12 +25,15 @@ namespace GK1
     {
         public List<GKPolygon> polygons;
         public GKPolygon currentPolygon;
+        public GKPolygon clippingPolygon;
+
         public Carbon visuals;
         Edge currentlyedgeDragged;
         Vector mouseToVertice1;
         Vector mouseToVertice2;
         bool newPolygonMode = true;
         bool addPolygonMode = false;
+        bool clipPolygonMode = false;
         bool addPolygonModeFinished = false;
         private Point dragWholePolygonCoords;
         private bool polygonDragged;
@@ -133,6 +136,7 @@ namespace GK1
         {
             newPolygonMode = false;
             addPolygon.IsEnabled = true;
+            clipPolygon.IsEnabled = true;
         }
         private void endAddPolygonMode()
         {
@@ -157,7 +161,10 @@ namespace GK1
 
         public void RefreshPolygon(GKPolygon polygon)
         {
-            if (polygon == currentPolygon)
+
+            if (clipPolygonMode && polygon == clippingPolygon)
+                visuals.redrawClippingPolygon(polygon);
+            else if (polygon == currentPolygon)
                 visuals.redrawCurrentPolygon(polygon);
             else
                 visuals.redrawPolygon(polygon);
@@ -189,7 +196,8 @@ namespace GK1
             addPolygon.IsEnabled = false;
             addPolygonModeFinished = false;
             addPolygonMode = false;
-
+            clipPolygonMode = false;
+            clipPolygon.IsEnabled = false;
             dragged = false;
             currentPolygon = new GKPolygon(visuals);
             polygons = new List<GKPolygon>();
@@ -339,17 +347,69 @@ namespace GK1
 
         private void drawingScreen_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            int currentPolygonIndex = polygons.IndexOf(currentPolygon);
-
-            if (e.Delta > 0)
+            if (clipPolygonMode)
             {
-                currentPolygon = polygons[(currentPolygonIndex + 1) % polygons.Count];
+                int clippingPolygonIndex = polygons.IndexOf(clippingPolygon);
+
+                if (e.Delta > 0)
+                {
+                    clippingPolygon = polygons[(clippingPolygonIndex + 1) % polygons.Count];
+                }
+                else
+                {
+                    clippingPolygon = polygons[(clippingPolygonIndex - 1 + polygons.Count) % polygons.Count];
+                }
             }
             else
             {
-                currentPolygon = polygons[(currentPolygonIndex - 1 + polygons.Count) % polygons.Count];
+                int currentPolygonIndex = polygons.IndexOf(currentPolygon);
+
+                if (e.Delta > 0)
+                {
+                    currentPolygon = polygons[(currentPolygonIndex + 1) % polygons.Count];
+                }
+                else
+                {
+                    currentPolygon = polygons[(currentPolygonIndex - 1 + polygons.Count) % polygons.Count];
+                }
             }
             RefreshAllPolygons(polygons);
+        }
+
+        private void clipPolygon_Click(object sender, RoutedEventArgs e)
+        {
+            if (!clipPolygonMode)
+            {
+                clippingPolygon = currentPolygon;
+                clipPolygonMode = true;
+                newPolygonMode = false;
+                addPolygonMode = false;
+            }
+            else
+            {
+                clipPolygonMode = false;
+            }
+            RefreshAllPolygons(polygons);
+        }
+
+        private void drawingScreen_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch(e.Key)
+            {
+                case Key.Space:
+                    {
+                        if(clipPolygonMode)
+                        {
+                            currentPolygon = SutherlandHodgman.GetIntersectedPolygon(currentPolygon, clippingPolygon);
+                            RefreshAllPolygons(polygons);
+
+                        }
+                        break;
+                    }
+                default:
+                    break;
+                 
+            }
         }
     }
 

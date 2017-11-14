@@ -262,6 +262,10 @@ namespace GK1
             }
 
         }
+        internal void redrawClippingPolygon(GKPolygon polygon)
+        {
+            redrawPolygon(polygon, Colors.IndianRed, Colors.White, Colors.DarkRed);
+        }
         internal void redrawCurrentPolygon(GKPolygon polygon)
         {
             redrawPolygon(polygon, Colors.LightBlue, Colors.White, Colors.DarkBlue);

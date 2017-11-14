@@ -111,6 +111,11 @@ namespace GK1
                 vertices.Insert(vertices.Count, newV);
             else
                 vertices.Insert((indexVert1 + indexVert2) / 2 + 1, newV);
+            PopulateEdges();
+        }
+
+        internal void PopulateEdges()
+        {
             edges = new List<Edge>();
             for (int i = 0; i < vertices.Count - 1; i++)
             {
@@ -118,8 +123,6 @@ namespace GK1
             }
             edges.Add(new Edge(vertices.Last(), vertices.First()));
         }
-
-
     }
 
 }

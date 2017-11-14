@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK1"
         mc:Ignorable="d"
-        Title="PolygonCreator"  ResizeMode="NoResize" WindowStyle="ToolWindow" WindowState="Maximized" >
+        Title="PolygonCreator"  ResizeMode="NoResize" WindowStyle="ToolWindow" WindowState="Maximized"  KeyDown="drawingScreen_KeyDown"  >
 	<Grid Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}">
 		<Menu Height="40"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalAlignment="Top" Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}">
 			<ItemsControl.ItemsPanel>
@@ -15,9 +15,10 @@
 			</ItemsControl.ItemsPanel>
 			<MenuItem x:Name="newPolygon" Header="New Polygon" Click="newPolygon_Click" Margin="0,0,0.2,0" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center"/>
 			<MenuItem x:Name="addPolygon" Header="Add Polygon"  Margin="0,0,0.2,0" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Click="addPolygon_Click" IsEnabled="False"/>
+			<MenuItem x:Name="clipPolygon" Header="Clip Polygon"  Margin="0,0,0.2,0" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Click="clipPolygon_Click" IsEnabled="False"/>
 
 		</Menu>
-		<Canvas x:Name="drawingScreen"  Margin="10,40,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" ClipToBounds="True" MouseRightButtonDown="drawingScreen_MouseRightButtonDown" MouseWheel="drawingScreen_MouseWheel" >
+		<Canvas x:Name="drawingScreen"  Margin="10,40,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" ClipToBounds="True" MouseRightButtonDown="drawingScreen_MouseRightButtonDown" MouseWheel="drawingScreen_MouseWheel">
 			<Image x:Name="lineCarbon">
 
 			</Image>

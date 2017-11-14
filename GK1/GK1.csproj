@@ -57,6 +57,9 @@
     </ApplicationDefinition>
     <Compile Include="Carbon.cs" />
     <Compile Include="Edge.cs" />
+    <Compile Include="geom.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="SutherlandHodgman.cs" />
     <Compile Include="Windows\EdgeSettings.xaml.cs">
       <DependentUpon>EdgeSettings.xaml</DependentUpon>
     </Compile>
