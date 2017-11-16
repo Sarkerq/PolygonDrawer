@@ -42,7 +42,7 @@ namespace GK1
         private void deleteVertice_Click(object sender, RoutedEventArgs e)
         {
             context.currentPolygon.deleteVertice(target);
-            context.RefreshPolygon(context.currentPolygon);
+            context.RefreshAllPolygons(context.polygons);
             this.Close();
         }
 

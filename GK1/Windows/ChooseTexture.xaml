@@ -1,0 +1,16 @@
+﻿<Window x:Class="GK1.Windows.ChooseTexture"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GK1.Windows"
+        mc:Ignorable="d"
+        Title="ChooseTexture" Height="300" Width="300">
+    <Grid>
+		<Image x:Name="currentTexture" Grid.Column="4" Grid.Row="2" Height="30"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
+			<Image.Source>
+				<BitmapImage  UriSource="/Images/brick_normalmap.png" />
+			</Image.Source>
+		</Image>
+	</Grid>
+</Window>

@@ -30,7 +30,7 @@ namespace GK1
         private void newVertice_Click(object sender, RoutedEventArgs e)
         {
             context.currentPolygon.PutVerticeInTheMiddle(target);
-            context.RefreshPolygon(context.currentPolygon);
+            context.RefreshAllPolygons(context.polygons);
 
             Close();
         }

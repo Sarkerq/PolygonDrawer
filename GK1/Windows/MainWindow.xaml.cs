@@ -1,5 +1,7 @@
-﻿using System;
+﻿using GK1.Windows;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,52 +33,59 @@ namespace GK1
         Edge currentlyedgeDragged;
         Vector mouseToVertice1;
         Vector mouseToVertice2;
-        bool newPolygonMode = true;
-        bool addPolygonMode = false;
-        bool clipPolygonMode = false;
-        bool addPolygonModeFinished = false;
+        ApplicationMode mode;
         private Point dragWholePolygonCoords;
         private bool polygonDragged;
         bool dragged = false;
         bool edgeDragged = false;
         int currentlyDragged = 0;
-
+        ImageSource texture;
 
 
         public MainWindow()
         {
+
             InitializeComponent();
             visuals = new Carbon(lineCarbon);
+
+            mode = ApplicationMode.NewPolygon;
             currentPolygon = new GKPolygon(visuals);
             polygons = new List<GKPolygon>();
             polygons.Add(currentPolygon);
-            visuals.UpdateScreen();
 
+            constantLightsourceVector_Checked(null, null);
+
+            constantObjectColor_Checked(null, null);
+
+            constantNormalVector_Checked(null, null);
+
+            noDisturbance_Checked(null, null);
+            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+            dispatcherTimer.Tick += dispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(160000);
+            dispatcherTimer.Start();
+
+            visuals.UpdateScreen();
         }
 
-
-
-
-
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-
-            Vertice targetVertice = ClickedVertice(e.GetPosition(drawingScreen));
-            if (targetVertice != null) OnClickedVertice(targetVertice);
-            else
+            if(visuals.lightsourceRadius > 0)
             {
-                Edge targetEdge = ClickedEdge(e.GetPosition(drawingScreen));
-                if (targetEdge != null) OnClickedEdge(targetEdge, e);
-                else if (newPolygonMode) OnNewVertice(e.GetPosition(drawingScreen));
-
-
-
+                visuals.lightPixelVector[0] += Carbon.MAX_WIDTH / Carbon.TICKS_PER_DAY;
+                if (visuals.lightPixelVector[0] > Carbon.MAX_WIDTH) visuals.lightPixelVector[0] -= Carbon.MAX_WIDTH;
+                visuals.lightPixelVector[1] = Carbon.MAX_HEIGHT / 2;
+                visuals.lightPixelVector[2] =
+                    visuals.lightsourceRadius *
+                    (1 - Math.Abs(visuals.lightPixelVector[0] - Carbon.MAX_WIDTH / 2) / (Carbon.MAX_WIDTH / 2));
+                RefreshAllPolygons(polygons);
             }
         }
+
         private void OnNewVertice(Point location)
         {
             Vertice newV = new Vertice(location);
-            if (newPolygonMode && currentPolygon.vertices.Count >= 1)
+            if (mode == ApplicationMode.NewPolygon && currentPolygon.vertices.Count >= 1)
             {
                 currentPolygon.edges.Add(new Edge(currentPolygon.vertices.Last(), newV));
             }
@@ -114,7 +123,7 @@ namespace GK1
 
         private void OnClickedVertice(Vertice target)
         {
-            if (newPolygonMode)
+            if (mode == ApplicationMode.NewPolygon)
             {
                 if (target == currentPolygon.vertices.First())
                 {
@@ -134,14 +143,13 @@ namespace GK1
 
         private void endNewPolygonMode()
         {
-            newPolygonMode = false;
+            mode = ApplicationMode.Standard;
             addPolygon.IsEnabled = true;
             clipPolygon.IsEnabled = true;
         }
         private void endAddPolygonMode()
         {
-            addPolygonMode = false;
-            addPolygonModeFinished = true;
+            mode = ApplicationMode.Standard;
         }
         private Vertice ClickedVertice(Point location)
         {
@@ -162,12 +170,17 @@ namespace GK1
         public void RefreshPolygon(GKPolygon polygon)
         {
 
-            if (clipPolygonMode && polygon == clippingPolygon)
+            if (mode == ApplicationMode.ClipPolygon && polygon == clippingPolygon)
                 visuals.redrawClippingPolygon(polygon);
             else if (polygon == currentPolygon)
                 visuals.redrawCurrentPolygon(polygon);
             else
                 visuals.redrawPolygon(polygon);
+            if (polygon.edges.Count == polygon.vertices.Count && polygon.edges.Count > 0)
+            {
+
+                visuals.fillPolygon(polygon);
+            }
         }
         public void RefreshAllPolygons(List<GKPolygon> polygons)
         {
@@ -192,11 +205,8 @@ namespace GK1
 
             ClearCanvas();
             visuals.clear();
-            newPolygonMode = true;
+            mode = ApplicationMode.NewPolygon;
             addPolygon.IsEnabled = false;
-            addPolygonModeFinished = false;
-            addPolygonMode = false;
-            clipPolygonMode = false;
             clipPolygon.IsEnabled = false;
             dragged = false;
             currentPolygon = new GKPolygon(visuals);
@@ -207,29 +217,6 @@ namespace GK1
 
 
 
-        private void drawingScreen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (dragged)
-            {
-                currentPolygon.vertices[currentlyDragged].coords.X = e.GetPosition(drawingScreen).X;
-                currentPolygon.vertices[currentlyDragged].coords.Y = e.GetPosition(drawingScreen).Y;
-                RefreshAllPolygons(polygons);
-                dragged = false;
-                return;
-            }
-            if (edgeDragged)
-            {
-
-                currentlyedgeDragged.v1.coords.X = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
-                currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
-                currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
-                currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                RefreshAllPolygons(polygons);
-                edgeDragged = false;
-                return;
-            }
-
-        }
 
         private void DraggingPolygon(Point pt)
         {
@@ -271,18 +258,61 @@ namespace GK1
 
         }
 
-
-
-
-        private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        private void drawingScreen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (newPolygonMode) FinishPolygon();
-            else if (polygonDragged)
+            if (dragged)
+            {
+                currentPolygon.vertices[currentlyDragged].coords.X = e.GetPosition(drawingScreen).X;
+                currentPolygon.vertices[currentlyDragged].coords.Y = e.GetPosition(drawingScreen).Y;
+                RefreshAllPolygons(polygons);
+                dragged = false;
+                return;
+            }
+            if (edgeDragged)
+            {
+
+                currentlyedgeDragged.v1.coords.X = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).X;
+                currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
+                currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
+                currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
+                RefreshAllPolygons(polygons);
+                edgeDragged = false;
+                return;
+            }
+            if (polygonDragged)
             {
                 DraggingPolygon(e.GetPosition(drawingScreen));
                 polygonDragged = false;
                 return;
             }
+        }
+
+
+
+
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+
+            Vertice targetVertice = ClickedVertice(e.GetPosition(drawingScreen));
+            if (targetVertice != null) OnClickedVertice(targetVertice);
+            else
+            {
+                Edge targetEdge = ClickedEdge(e.GetPosition(drawingScreen));
+                if (targetEdge != null) OnClickedEdge(targetEdge, e);
+                else if (mode == ApplicationMode.NewPolygon) OnNewVertice(e.GetPosition(drawingScreen));
+
+                else
+                {
+                    OnMovedPolygon(e);
+                }
+
+            }
+        }
+
+
+        private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (mode == ApplicationMode.NewPolygon) FinishPolygon();
             else
             {
                 Vertice targetVertice = ClickedVertice(e.GetPosition(drawingScreen));
@@ -296,7 +326,41 @@ namespace GK1
             }
 
         }
+        private void drawingScreen_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
 
+        }
+
+        private void drawingScreen_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (mode == ApplicationMode.ClipPolygon)
+            {
+                int clippingPolygonIndex = polygons.IndexOf(clippingPolygon);
+
+                if (e.Delta > 0)
+                {
+                    clippingPolygon = polygons[(clippingPolygonIndex + 1) % polygons.Count];
+                }
+                else
+                {
+                    clippingPolygon = polygons[(clippingPolygonIndex - 1 + polygons.Count) % polygons.Count];
+                }
+            }
+            else
+            {
+                int currentPolygonIndex = polygons.IndexOf(currentPolygon);
+
+                if (e.Delta > 0)
+                {
+                    currentPolygon = polygons[(currentPolygonIndex + 1) % polygons.Count];
+                }
+                else
+                {
+                    currentPolygon = polygons[(currentPolygonIndex - 1 + polygons.Count) % polygons.Count];
+                }
+            }
+            RefreshAllPolygons(polygons);
+        }
 
         private void FinishPolygon()
         {
@@ -336,84 +400,247 @@ namespace GK1
         {
             currentPolygon = new GKPolygon(visuals);
             polygons.Add(currentPolygon);
-            newPolygonMode = true;
+            mode = ApplicationMode.NewPolygon;
+            clipPolygon.IsEnabled = false;
+            addPolygon.IsEnabled = false;
+
         }
 
-        private void drawingScreen_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
 
-            OnMovedPolygon(e);
-        }
-
-        private void drawingScreen_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (clipPolygonMode)
-            {
-                int clippingPolygonIndex = polygons.IndexOf(clippingPolygon);
-
-                if (e.Delta > 0)
-                {
-                    clippingPolygon = polygons[(clippingPolygonIndex + 1) % polygons.Count];
-                }
-                else
-                {
-                    clippingPolygon = polygons[(clippingPolygonIndex - 1 + polygons.Count) % polygons.Count];
-                }
-            }
-            else
-            {
-                int currentPolygonIndex = polygons.IndexOf(currentPolygon);
-
-                if (e.Delta > 0)
-                {
-                    currentPolygon = polygons[(currentPolygonIndex + 1) % polygons.Count];
-                }
-                else
-                {
-                    currentPolygon = polygons[(currentPolygonIndex - 1 + polygons.Count) % polygons.Count];
-                }
-            }
-            RefreshAllPolygons(polygons);
-        }
 
         private void clipPolygon_Click(object sender, RoutedEventArgs e)
         {
-            if (!clipPolygonMode)
+            if (mode != ApplicationMode.ClipPolygon)
             {
                 clippingPolygon = currentPolygon;
-                clipPolygonMode = true;
-                newPolygonMode = false;
-                addPolygonMode = false;
+                mode = ApplicationMode.ClipPolygon;
+                addPolygon.IsEnabled = false;
             }
             else
             {
-                clipPolygonMode = false;
+                mode = ApplicationMode.Standard;
+                addPolygon.IsEnabled = true;
+
             }
             RefreshAllPolygons(polygons);
         }
 
         private void drawingScreen_KeyDown(object sender, KeyEventArgs e)
         {
-            switch(e.Key)
+            switch (e.Key)
             {
-                case Key.Space:
+                case Key.LeftShift:
                     {
-                        if(clipPolygonMode)
+                        if (mode == ApplicationMode.ClipPolygon)
                         {
-                            currentPolygon = SutherlandHodgman.GetIntersectedPolygon(currentPolygon, clippingPolygon);
-                            RefreshAllPolygons(polygons);
+                            if (clippingPolygon.IsConvex())
+
+                            {
+                                currentPolygon = SutherlandHodgman.GetIntersectedPolygon(currentPolygon, clippingPolygon);
+                                if (currentPolygon.vertices.Count == 0)
+                                {
+                                    polygons.Remove(currentPolygon);
+                                    currentPolygon = polygons[0];
+                                }
+                                RefreshAllPolygons(polygons);
+                            }
+                            else
+                                MessageBox.Show("Clipping polygon must be convex!", "Bad polygon", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
                         }
                         break;
                     }
                 default:
                     break;
-                 
+
+            }
+        }
+
+
+
+        private void constantObjectColor_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.texturePixelData = new byte[3];
+                if (ClrPcker_Object != null && ClrPcker_Object.SelectedColor != null)
+                {
+                    visuals.texturePixelData[0] = ((Color)(ClrPcker_Object.SelectedColor)).R;
+                    visuals.texturePixelData[1] = ((Color)(ClrPcker_Object.SelectedColor)).G;
+                    visuals.texturePixelData[2] = ((Color)(ClrPcker_Object.SelectedColor)).B;
+
+                }
+                else
+                {
+                    visuals.texturePixelData[0] = 255;
+                    visuals.texturePixelData[1] = 255;
+                    visuals.texturePixelData[2] = 255;
+                }
+                visuals.texturePixelDataWidth = 1;
+                visuals.texturePixelDataHeight = 1;
+                if (polygons != null)
+                    RefreshAllPolygons(polygons);
+            }
+        }
+
+        private void constantTextureColor_Checked(object sender, RoutedEventArgs e)
+        {
+            if (currentTexture != null)
+            {
+                visuals.texturePixelData = Global.ImageSourceToBytes(currentTexture.Source);
+
+                visuals.texturePixelDataWidth = ((BitmapImage)(currentTexture.Source)).PixelWidth;
+                visuals.texturePixelDataHeight = ((BitmapImage)(currentTexture.Source)).PixelHeight;
+            }
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
+        }
+
+        private void normalVectorMap_Checked(object sender, RoutedEventArgs e)
+        {
+            if (currentMap != null)
+            {
+                visuals.mapPixelData = Global.ImageSourceToBytes(currentMap.Source);
+
+                visuals.mapPixelDataWidth = ((BitmapImage)(currentMap.Source)).PixelWidth;
+                visuals.mapPixelDataHeight = ((BitmapImage)(currentMap.Source)).PixelHeight;
+            }
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
+        }
+
+        private void constantNormalVector_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.mapPixelData = new byte[3];
+                if (ClrPcker_Object != null && ClrPcker_Object.SelectedColor != null)
+                {
+                    visuals.mapPixelData[0] = ((Color)(ClrPcker_Object.SelectedColor)).R;
+                    visuals.mapPixelData[1] = ((Color)(ClrPcker_Object.SelectedColor)).G;
+                    visuals.mapPixelData[2] = ((Color)(ClrPcker_Object.SelectedColor)).B;
+
+                }
+                else
+                {
+                    visuals.mapPixelData[0] = 255;
+                    visuals.mapPixelData[1] = 255;
+                    visuals.mapPixelData[2] = 255;
+                }
+                visuals.mapPixelDataWidth = 1;
+                visuals.mapPixelDataHeight = 1;
+                if (polygons != null)
+                    RefreshAllPolygons(polygons);
+            }
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
+        }
+
+        private void constantLightsourceVector_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.lightsourceRadius = 0;
+                visuals.lightPixelVector = new double[3];
+                visuals.lightPixelVector[0] = 0;
+                visuals.lightPixelVector[1] = 0;
+                visuals.lightPixelVector[2] = 1;
+                if (polygons != null)
+                    RefreshAllPolygons(polygons);
+            }
+        }
+
+        private void animatedLightsourceVector_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!double.TryParse(lightsourceRadius.Text, out visuals.lightsourceRadius))
+            {
+                MessageBox.Show("Please input correct number!", "Bad input", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
+        }
+
+        private void noDisturbance_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.disturbancePixelData = new byte[3];
+                if (ClrPcker_Object != null && ClrPcker_Object.SelectedColor != null)
+                {
+                    visuals.disturbancePixelData[0] = ((Color)(ClrPcker_Object.SelectedColor)).R;
+                    visuals.disturbancePixelData[1] = ((Color)(ClrPcker_Object.SelectedColor)).G;
+                    visuals.disturbancePixelData[2] = ((Color)(ClrPcker_Object.SelectedColor)).B;
+
+                }
+                else
+                {
+                    visuals.disturbancePixelData[0] = 255;
+                    visuals.disturbancePixelData[1] = 255;
+                    visuals.disturbancePixelData[2] = 255;
+                }
+                visuals.disturbancePixelDataWidth = 1;
+                visuals.disturbancePixelDataHeight = 1;
+                if (polygons != null)
+                    RefreshAllPolygons(polygons);
+            }
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
+        }
+
+        private void lightMapDisturbance_Checked(object sender, RoutedEventArgs e)
+        {
+            if (currentDisturbance != null)
+            {
+                visuals.disturbancePixelData = Global.ImageSourceToBytes(currentDisturbance.Source);
+
+                visuals.disturbancePixelDataWidth = ((BitmapImage)(currentDisturbance.Source)).PixelWidth;
+                visuals.disturbancePixelDataHeight = ((BitmapImage)(currentDisturbance.Source)).PixelHeight;
+            }
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
+        }
+
+        private void ClrPcker_Object_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (constantObjectColor.IsChecked == true)
+            {
+                constantObjectColor_Checked(null, null);
+            }
+        }
+
+        private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+        }
+
+        private void ClrPcker_Lightsource_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (e.NewValue != null)
+            {
+                visuals.lightsourceColor = (Color)e.NewValue;
+
+            }
+        }
+
+        private void lightsourceRadius_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                if (!double.TryParse(lightsourceRadius.Text, out visuals.lightsourceRadius))
+                {
+                    MessageBox.Show("Please input correct number!", "Bad input", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }
 
-
+    enum ApplicationMode
+    {
+        Standard,
+        NewPolygon,
+        AddPolygon,
+        ClipPolygon
+    }
 
 
 

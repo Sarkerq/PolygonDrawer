@@ -18,15 +18,32 @@ namespace GK1
     }
     public class Carbon
     {
+        public const int TICKS_PER_DAY = 24;
         public const int MAX_WIDTH = 1920;
         public const int MAX_HEIGHT = 1080;
         public int rawStride, width, height;
-        public PixelFormat pf = PixelFormats.Pbgra32;
+        public PixelFormat pf = PixelFormats.Rgb24;
         public byte[] pixelData;
+
+        public byte[] texturePixelData;
+        public int texturePixelDataWidth, texturePixelDataHeight;
+
+        public double[] lightPixelVector; //[x,y,z]
+
+        public byte[] disturbancePixelData;
+        public int disturbancePixelDataWidth, disturbancePixelDataHeight;
+
+        public byte[] mapPixelData;
+        public int mapPixelDataWidth, mapPixelDataHeight;
+
+        public double lightsourceRadius;
+        public Color lightsourceColor = Colors.White;
+
         public Edge[] pixelOwner;
         public Algorithm algorithm;
         public Image lineCarbon;
         BitmapSource bitmap;
+
 
         public Carbon(Image _lineCarbon)
         {
@@ -34,7 +51,7 @@ namespace GK1
             algorithm = Algorithm.Bresenham;
             width = MAX_WIDTH;
             height = MAX_HEIGHT;
-            pf = PixelFormats.Pbgra32;
+            pf = PixelFormats.Rgb24;
             rawStride = (MAX_WIDTH * pf.BitsPerPixel + 7) / 8;
             pixelData = new byte[rawStride * MAX_HEIGHT];
             pixelOwner = new Edge[rawStride * MAX_HEIGHT];
@@ -52,104 +69,10 @@ namespace GK1
 
         public void drawEdge(Edge e, Color color)
         {
-            if (algorithm == Algorithm.Bresenham)
-                Bresenham(e, color);
-            else
-                WU(e, color);
-        }
-        public void WU(Edge e, Color color)
-        {
-            double x0 = e.v1.coords.X;
-            double y0 = e.v1.coords.Y;
-            double x1 = e.v2.coords.X;
-            double y1 = e.v2.coords.Y;
-            bool steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
-            double temp;
-            if (steep)
-            {
-                temp = x0; x0 = y0; y0 = temp;
-                temp = x1; x1 = y1; y1 = temp;
-            }
-            if (x0 > x1)
-            {
-                temp = x0; x0 = x1; x1 = temp;
-                temp = y0; y0 = y1; y1 = temp;
-            }
-
-            double dx = x1 - x0;
-            double dy = y1 - y0;
-            double gradient = dy / dx;
-
-            double xEnd = round(x0);
-            double yEnd = y0 + gradient * (xEnd - x0);
-            double xGap = rfpart(x0 + 0.5);
-            double xPixel1 = xEnd;
-            double yPixel1 = ipart(yEnd);
-
-            if (steep)
-            {
-                SetPixel(yPixel1, xPixel1, rfpart(yEnd) * xGap, Colors.Red, e);
-                SetPixel(yPixel1 + 1, xPixel1, fpart(yEnd) * xGap, Colors.Red, e);
-            }
-            else
-            {
-                SetPixel(xPixel1, yPixel1, rfpart(yEnd) * xGap, Colors.Red, e);
-                SetPixel(xPixel1, yPixel1 + 1, fpart(yEnd) * xGap, Colors.Red, e);
-            }
-            double intery = yEnd + gradient;
-
-            xEnd = round(x1);
-            yEnd = y1 + gradient * (xEnd - x1);
-            xGap = fpart(x1 + 0.5);
-            double xPixel2 = xEnd;
-            double yPixel2 = ipart(yEnd);
-            if (steep)
-            {
-                SetPixel(yPixel2, xPixel2, rfpart(yEnd) * xGap, Colors.Red, e);
-                SetPixel(yPixel2 + 1, xPixel2, fpart(yEnd) * xGap, Colors.Red, e);
-            }
-            else
-            {
-                SetPixel(xPixel2, yPixel2, rfpart(yEnd) * xGap, Colors.Red, e);
-                SetPixel(xPixel2, yPixel2 + 1, fpart(yEnd) * xGap, Colors.Red, e);
-            }
-
-            if (steep)
-            {
-                for (int x = (int)(xPixel1 + 1); x <= xPixel2 - 1; x++)
-                {
-                    SetPixel(ipart(intery), x, rfpart(intery), Colors.Red, e);
-                    SetPixel(ipart(intery) + 1, x, fpart(intery), Colors.Red, e);
-                    intery += gradient;
-                }
-            }
-            else
-            {
-                for (int x = (int)(xPixel1 + 1); x <= xPixel2 - 1; x++)
-                {
-                    SetPixel(x, ipart(intery), rfpart(intery), Colors.Red, e);
-                    SetPixel(x, ipart(intery) + 1, fpart(intery), Colors.Red, e);
-                    intery += gradient;
-                }
-            }
+            Bresenham(e, color);
         }
 
 
-
-        int ipart(double x) { return (int)x; }
-
-        int round(double x) { return ipart(x + 0.5); }
-
-        double fpart(double x)
-        {
-            if (x < 0) return (1 - (x - Math.Floor(x)));
-            return (x - Math.Floor(x));
-        }
-
-        double rfpart(double x)
-        {
-            return 1 - fpart(x);
-        }
         public void Bresenham(Edge e, Color color)
         {
             int x = (int)e.v1.coords.X;
@@ -206,28 +129,177 @@ namespace GK1
 
 
 
-        private void SetPixel(double x, double y, double c, Color original, Edge owner)
-        {
-            int alpha = (int)(c * 255);
-            if (alpha > 255) alpha = 255;
-            if (alpha < 0) alpha = 0;
-            Color aliased = Color.FromArgb((byte)alpha, original.R, original.G, original.B);
-            SetPixel((int)x, (int)y, aliased, owner);
-        }
         public void SetPixel(int x, int y, Color c, Edge owner = null)
         {
-            int xIndex = x * 4;
+            int xIndex = x * 3;
             int yIndex = y * rawStride;
             if (x < width && x >= 0 && y < height && y >= 0)
             {
-                pixelData[xIndex + yIndex] = c.B;
+                pixelData[xIndex + yIndex] = c.R;
                 pixelData[xIndex + yIndex + 1] = c.G;
-                pixelData[xIndex + yIndex + 2] = c.R;
-                pixelData[xIndex + yIndex + 3] = c.A;
+                pixelData[xIndex + yIndex + 2] = c.B;
                 if (owner != null)
                     pixelOwner[xIndex + yIndex] = owner;
             }
         }
+        private void SetPixelFromTexture(int x, int y)
+        {
+            if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT) return;
+            int xIndex = x * 3;
+            int yIndex = y * rawStride;
+
+
+            int xTextureIndex = (x % texturePixelDataWidth) * 3;
+            int textureRawStride = (texturePixelDataWidth * pf.BitsPerPixel + 7) / 8;
+            int yTextureIndex = (y % texturePixelDataHeight) * textureRawStride;
+
+
+            int xMapIndex = (x % mapPixelDataWidth) * 3;
+            int mapRawStride = (mapPixelDataWidth * pf.BitsPerPixel + 7) / 8;
+            int yMapIndex = (y % mapPixelDataHeight) * mapRawStride;
+
+
+            int xDisturbanceIndex = (x % disturbancePixelDataWidth) * 3;
+            int previousXDisturbanceIndex = ((x - 1) % disturbancePixelDataWidth) * 3;
+            if (previousXDisturbanceIndex < 0) previousXDisturbanceIndex = 0;
+            int disturbanceRawStride = (disturbancePixelDataWidth * pf.BitsPerPixel + 7) / 8;
+
+            int yDisturbanceIndex = (y % disturbancePixelDataHeight) * disturbanceRawStride;
+            int previousYDisturbanceIndex = ((y - 1) % disturbancePixelDataHeight) * disturbanceRawStride;
+            if (previousYDisturbanceIndex < 0) previousYDisturbanceIndex = 0;
+
+
+            int xLightIndex = 0;
+            int lightRawStride = 0;
+            int yLightIndex = 0;
+            double[] normalizedVector = new double[3] {
+                ((double)(mapPixelData[xMapIndex + yMapIndex]  - 127))/128,
+                ((double)(mapPixelData[xMapIndex + yMapIndex + 1]  - 127))/128,
+                ((double)(mapPixelData[xMapIndex + yMapIndex + 2]))/ 255};
+            reduceToZOne(normalizedVector);
+            double dh_x = 
+                disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
+                disturbancePixelData[previousXDisturbanceIndex + yDisturbanceIndex];
+            double dh_y = 
+                disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
+                disturbancePixelData[xDisturbanceIndex + previousYDisturbanceIndex]; ;
+            double[] disturbedVector = new double[3] {
+                dh_x,
+                dh_y,
+                -normalizedVector[0] * dh_x - normalizedVector[1] * dh_y};
+            double[] normalizedDisturbedVector = new double[3] {
+                normalizedVector[0] +  disturbedVector[0],
+                normalizedVector[1] +  disturbedVector[1],
+                normalizedVector[2] +  disturbedVector[2] };
+            normalizeVector(normalizedDisturbedVector);
+
+            double[] thispixelLighting;
+            if (lightsourceRadius == 0)
+            {
+                thispixelLighting = lightPixelVector;
+            }
+            else
+            {
+                thispixelLighting = new double[3] {
+                Math.Abs(x -  lightPixelVector[xLightIndex + yLightIndex]),
+                Math.Abs(y -  lightPixelVector[xLightIndex + yLightIndex + 1]),
+                lightPixelVector[xLightIndex + yLightIndex + 2] };
+                normalizeVector(thispixelLighting);
+            }
+            double NLAngle =
+                normalizedDisturbedVector[0] * thispixelLighting[0] +
+                normalizedDisturbedVector[1] * thispixelLighting[1] +
+                normalizedDisturbedVector[2] * thispixelLighting[2];
+            if (NLAngle > 1) NLAngle = 1;
+            if (NLAngle < -1) NLAngle = -1;
+            if (x < width && x >= 0 && y < height && y >= 0)
+            {
+                pixelData[xIndex + yIndex] = computeLambertModel(
+                    texturePixelData[(xTextureIndex + yTextureIndex)],
+                    lightsourceColor.R,
+                    NLAngle);
+
+
+                pixelData[xIndex + yIndex + 1] = computeLambertModel(
+                    texturePixelData[xTextureIndex + yTextureIndex + 1],
+                    lightsourceColor.G,
+                    NLAngle);
+
+
+                pixelData[xIndex + yIndex + 2] = computeLambertModel(
+                    texturePixelData[xTextureIndex + yTextureIndex + 2],
+                    lightsourceColor.B,
+                    NLAngle);
+            }
+        }
+
+        public void normalizeVector(double[] normalizedVector)
+        {
+
+            {
+                double max = Math.Max(Math.Max(Math.Abs(normalizedVector[0]), Math.Abs(normalizedVector[1])), Math.Abs(normalizedVector[2]));
+                if (max == 0) return;
+                for (int i = 0; i < 3; i++)
+                {
+                    normalizedVector[i] /= max;
+
+                }
+                double norm = FastSqrtInvAroundOne(
+                    normalizedVector[0] * normalizedVector[0] +
+                    normalizedVector[1] * normalizedVector[1] +
+                    normalizedVector[2] * normalizedVector[2]);
+                for (int i = 0; i < 3; i++)
+                {
+                    normalizedVector[i] *= norm * norm;
+
+                }
+
+            }
+        }
+        public void reduceToZOne(double[] reducedVector)
+        {
+            if (reducedVector[2] == 0)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if (reducedVector[i] > 0)
+                        reducedVector[i] = 1;
+                    else if (reducedVector[i] == 0)
+                        reducedVector[i] = 0;
+                    else
+                        reducedVector[i] = -1;
+
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    reducedVector[i] /= reducedVector[2];
+
+                }
+                reducedVector[2] = 1;
+            }
+        }
+        double FastSqrtInvAroundOne(double x)
+        {
+            const double a0 = 15.0d / 8.0d;
+            const double a1 = -5.0d / 4.0d;
+            const double a2 = 3.0d / 8.0d;
+
+            return a0 + a1 * x + a2 * x * x;
+        }
+        private byte computeLambertModel(byte objectColor, byte lightsourceColor, double NLAngle)
+        {
+            double I_O = ((double)objectColor) / 255;
+            double I_L = ((double)lightsourceColor) / 255;
+
+            double result = I_O * I_L * NLAngle;
+            if (result > 1) result = 1;
+            if (result < 0) result = 0;
+            return (byte)(result * 255);
+        }
+
         public void drawVertice(Vertice v, Color border, Color middle)
         {
             for (int y = (int)v.coords.Y - (int)Global.verticeRadius; y < (int)v.coords.Y + (int)Global.verticeRadius; y++)
@@ -270,7 +342,82 @@ namespace GK1
         {
             redrawPolygon(polygon, Colors.LightBlue, Colors.White, Colors.DarkBlue);
         }
+        public void fillPolygon(GKPolygon polygon)
+        {
+            List<ETElement>[] ET = new List<ETElement>[MAX_HEIGHT];
+            for (int i = 0; i < MAX_HEIGHT; i++) ET[i] = new List<ETElement>();
+            List<AETElement> AET = new List<AETElement>();
+            int maxYMin = 0;
+            int minYMin = int.MaxValue;
+            foreach (Edge e in polygon.edges)
+            {
+                ETElement etElement = new ETElement(e);
+                if (etElement.yMin >= 0)
+                {
+                    ET[Math.Min((int)etElement.yMin, MAX_HEIGHT - 1)].Add(etElement);
+                    if (etElement.yMin > maxYMin) maxYMin = (int)etElement.yMin;
+                    if (etElement.yMin < minYMin) minYMin = (int)etElement.yMin;
+                }
 
+            }
+            //We count from the top
+            for (int i = Math.Min(maxYMin, MAX_HEIGHT - 1); i >= 0; i--)
+            {
+                foreach (ETElement e in ET[i])
+                {
+                    if (e.yMax <= i)
+                    {
+
+                        AET.Add(new AETElement(e));
+                        if (e.yMin > i)
+                        {
+                            AET.Last().x -= ((int)e.yMin - i) * AET.Last().mRecip;
+                        }
+                    }
+                }
+                AET.Sort(new ByX());
+                List<AETElement> AETList = AET.ToList();
+                for (int j = 0; j < AETList.Count - 1; j += 2)
+                {
+
+                    for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
+                    {
+                        SetPixelFromTexture(k, i);
+
+                    }
+                }
+                AET.Sort(new ByYMax());
+                while (AET.Count > 0 && (int)AET.Last().yMax == i)
+                {
+                    AET.Remove(AET.Last());
+                }
+                foreach (AETElement e in AET)
+                {
+                    e.x -= e.mRecip;
+                }
+            }
+        }
+
+
+
+        public class ByX : IComparer<AETElement>
+        {
+            public int Compare(AETElement p1, AETElement p2)
+            {
+                if (p1.x == p2.x) return 0;
+                return p1.x > p2.x ? 1 : -1;
+
+            }
+        }
+        public class ByYMax : IComparer<AETElement>
+        {
+            public int Compare(AETElement p1, AETElement p2)
+            {
+                if (p1.yMax == p2.yMax) return 0;
+                return p1.yMax > p2.yMax ? 1 : -1;
+
+            }
+        }
         public void clear()
         {
             pixelData = new byte[rawStride * height];

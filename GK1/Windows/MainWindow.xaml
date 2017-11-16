@@ -4,10 +4,33 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK1"
+		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="PolygonCreator"  ResizeMode="NoResize" WindowStyle="ToolWindow" WindowState="Maximized"  KeyDown="drawingScreen_KeyDown"  >
 	<Grid Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}">
-		<Menu Height="40"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalAlignment="Top" Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="40"/>
+			<RowDefinition Height="30"/>
+			<RowDefinition/>
+			<RowDefinition Height="30"/>
+			<RowDefinition/>
+			<RowDefinition Height="30"/>
+			<RowDefinition/>
+			<RowDefinition Height="30"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="6*"/>
+			<ColumnDefinition Width="6*"/>
+			<ColumnDefinition Width="6*"/>
+			<ColumnDefinition Width="3*"/>
+			<ColumnDefinition Width="2*"/>
+
+		</Grid.ColumnDefinitions>
+
+		<!-- MENUS !-->
+
+		<Menu Height="40"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalAlignment="Top" Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}" Grid.ColumnSpan="3">
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
 					<UniformGrid Rows="1"/>
@@ -18,11 +41,61 @@
 			<MenuItem x:Name="clipPolygon" Header="Clip Polygon"  Margin="0,0,0.2,0" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Click="clipPolygon_Click" IsEnabled="False"/>
 
 		</Menu>
-		<Canvas x:Name="drawingScreen"  Margin="10,40,10,10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" ClipToBounds="True" MouseRightButtonDown="drawingScreen_MouseRightButtonDown" MouseWheel="drawingScreen_MouseWheel">
+
+
+		<Label Content="Lightsource Color :" Grid.Column="3" HorizontalAlignment="Left" Height="40" Margin="0,0,0,0" VerticalAlignment="Top" Width="117" Grid.ColumnSpan="1"/>
+		<xctk:ColorPicker Grid.Column="4" Name="ClrPcker_Lightsource"  Height="30" SelectedColorChanged="ClrPcker_Lightsource_SelectedColorChanged"  ></xctk:ColorPicker>
+
+		<Label Content="Object Color :" Grid.Column="3" Grid.Row="1" HorizontalAlignment="Left" Height="40" Margin="0,0,0,0" VerticalAlignment="Top" Width="117" Grid.ColumnSpan="2"/>
+		<Grid Grid.Column="3" Grid.Row="2">
+			<RadioButton  x:Name="constantObjectColor" Content="Constant"  HorizontalAlignment="Left" Margin="14.8,20.6,0,0"  VerticalAlignment="Top" Checked="constantObjectColor_Checked" IsChecked="True"/>
+			<RadioButton  x:Name="constantTextureColor" Content="Texture"  HorizontalAlignment="Left" Margin="15,61,0,10.4" Checked="constantTextureColor_Checked"/>
+		</Grid>
+		<xctk:ColorPicker Grid.Column="4" Grid.Row="2" Name="ClrPcker_Object" Grid.ColumnSpan="1" Height="30" Margin="10,10,-0.4,36.8" Grid.RowSpan="1" VerticalAlignment="Top" SelectedColorChanged="ClrPcker_Object_SelectedColorChanged"  ></xctk:ColorPicker>
+		<Image x:Name="currentTexture" Grid.Column="4" Grid.Row="2" Height="30"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
+			<Image.Source>
+				<BitmapImage  UriSource="/Images/brick_normalmap.png" />
+			</Image.Source>
+		</Image>
+
+		<Label Content="Normal Vector :" Grid.Column="3" Grid.Row="3" HorizontalAlignment="Left" Height="40" Margin="0,0,0,0" VerticalAlignment="Top" Width="117" Grid.ColumnSpan="2"/>
+		<Grid Grid.Column="3" Grid.Row="4">
+			<RadioButton x:Name="constantNormalVector" Content="Constant ([0,0,1])"  HorizontalAlignment="Left" Margin="14.8,20.6,0,0"  VerticalAlignment="Top" Checked="constantNormalVector_Checked" IsChecked="True"/>
+			<RadioButton x:Name="normalVectorMap" Content="NormalMap"  HorizontalAlignment="Left" Margin="14.8,60.6,0,0" VerticalAlignment="Top" Checked="normalVectorMap_Checked" />
+		</Grid>
+		<Image x:Name="currentMap" Grid.Column="4" Grid.Row="4" Height="30"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top">
+			<Image.Source>
+				<BitmapImage  UriSource="/Images/brick_normalmap.png" />
+			</Image.Source>
+		</Image>
+
+		<Label Content="Lightsource Vector :" Grid.Column="3" Grid.Row="5" HorizontalAlignment="Left" Height="40" Margin="0,0,0,0" VerticalAlignment="Top" Width="117" Grid.ColumnSpan="2"/>
+		<Grid Grid.Column="3" Grid.Row="6">
+			<RadioButton x:Name="constantLightsourceVector" Content="Constant ([0,0,1])" Margin="14.8,10.6,0,0"  VerticalAlignment="Top" Checked="constantLightsourceVector_Checked" IsChecked="True"/>
+			<RadioButton x:Name="animatedLightsourceVector" Content="Animated on sphere on R = "  HorizontalAlignment="Left" Margin="14.8,60.6,0,0" VerticalAlignment="Top" Checked="animatedLightsourceVector_Checked"/>
+		</Grid>
+		<TextBox  x:Name="lightsourceRadius" Grid.Column="4" HorizontalAlignment="Left" Height="50" Margin="17.8,76,0,0" Grid.Row="6" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="39" TextChanged="lightsourceRadius_TextChanged"/>
+
+		<Label Content="Set D :" Grid.Column="3" Grid.Row="7" HorizontalAlignment="Left" Height="40" Margin="0,0,0,0" VerticalAlignment="Top" Width="117" Grid.ColumnSpan="2"/>
+		<Grid Grid.Column="3" Grid.Row="8">
+			<RadioButton x:Name="noDisturbance" Content="None ([0,0,0])"  HorizontalAlignment="Left" Margin="14.8,20.6,0,0"  VerticalAlignment="Top" Checked="noDisturbance_Checked" IsChecked="True"/>
+			<RadioButton x:Name="lightMapDisturbance" Content="LightMap"  HorizontalAlignment="Left" Margin="14.8,60.6,0,0" VerticalAlignment="Top" Checked="lightMapDisturbance_Checked"/>
+		</Grid>
+		<Image  x:Name="currentDisturbance"  Grid.Column="4" Grid.Row="8" Height="30"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top">
+			<Image.Source>
+				<BitmapImage  UriSource="/Images/brick_heightmap.png" />
+			</Image.Source>
+		</Image>
+
+		<!-- CANVAS !-->
+
+		<Canvas x:Name="drawingScreen"  Margin="10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" 
+				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" 
+				MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" ClipToBounds="True" MouseRightButtonDown="drawingScreen_MouseRightButtonDown" 
+				MouseWheel="drawingScreen_MouseWheel" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="8">
 			<Image x:Name="lineCarbon">
 
 			</Image>
 		</Canvas>
-
 	</Grid>
 </Window>
