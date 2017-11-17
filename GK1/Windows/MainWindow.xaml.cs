@@ -49,18 +49,31 @@ namespace GK1
             InitializeComponent();
             visuals = new Carbon(lineCarbon);
 
-            mode = ApplicationMode.NewPolygon;
+            mode = ApplicationMode.Standard;
             currentPolygon = new GKPolygon(visuals);
             polygons = new List<GKPolygon>();
             polygons.Add(currentPolygon);
-
+            //2 wielokąty na ekranie
+            OnNewVertice(new Point(100, 200));
+            OnNewVertice(new Point(100, 400));
+            OnNewVertice(new Point(500, 300));
+            OnNewVertice(new Point(400, 200));
+            currentPolygon.PopulateEdges();
+            currentPolygon = new GKPolygon(visuals);
+            polygons.Add(currentPolygon);
+            OnNewVertice(new Point(600, 600));
+            OnNewVertice(new Point(600, 400));
+            OnNewVertice(new Point(800, 300));
+            OnNewVertice(new Point(900, 500));
+            OnNewVertice(new Point(1000, 500));
+            currentPolygon.PopulateEdges();
             constantLightsourceVector_Checked(null, null);
 
-            constantObjectColor_Checked(null, null);
+            constantTextureColor_Checked(null, null);
 
             constantNormalVector_Checked(null, null);
 
-            noDisturbance_Checked(null, null);
+            lightMapDisturbance_Checked(null, null);
             System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += dispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(160000);
@@ -172,6 +185,10 @@ namespace GK1
         {
             if (polygon.edges.Count == polygon.vertices.Count && polygon.edges.Count > 0)
             {
+                visuals.f_value = F_slider.Value;
+                visuals.Ks_value = Ks_slider.Value;
+                visuals.Kd_value = Kd_slider.Value;
+                visuals.m_value = M_slider.Value;
 
                 visuals.fillPolygon(polygon);
             }
@@ -207,13 +224,29 @@ namespace GK1
 
             ClearCanvas();
             visuals.clear();
-            mode = ApplicationMode.NewPolygon;
-            addPolygon.IsEnabled = false;
-            clipPolygon.IsEnabled = false;
+            mode = ApplicationMode.Standard;
+            addPolygon.IsEnabled = true;
+            clipPolygon.IsEnabled = true;
             dragged = false;
             currentPolygon = new GKPolygon(visuals);
             polygons = new List<GKPolygon>();
             polygons.Add(currentPolygon);
+            //2 wielokąty na ekranie
+            OnNewVertice(new Point(100, 200));
+            OnNewVertice(new Point(100, 400));
+            OnNewVertice(new Point(500, 300));
+            OnNewVertice(new Point(400, 200));
+            currentPolygon.PopulateEdges();
+
+            currentPolygon = new GKPolygon(visuals);
+            polygons.Add(currentPolygon);
+            OnNewVertice(new Point(600, 600));
+            OnNewVertice(new Point(600, 400));
+            OnNewVertice(new Point(800, 300));
+            OnNewVertice(new Point(900, 500));
+            OnNewVertice(new Point(1000, 500));
+            currentPolygon.PopulateEdges();
+
             RefreshAllPolygons(polygons);
         }
 
@@ -348,7 +381,7 @@ namespace GK1
                     clippingPolygon = polygons[(clippingPolygonIndex - 1 + polygons.Count) % polygons.Count];
                 }
             }
-            else
+            else if(mode == ApplicationMode.Standard)
             {
                 int currentPolygonIndex = polygons.IndexOf(currentPolygon);
 
@@ -485,7 +518,7 @@ namespace GK1
             }
         }
 
-        private void constantTextureColor_Checked(object sender, RoutedEventArgs e)
+        public void constantTextureColor_Checked(object sender, RoutedEventArgs e)
         {
             if (currentTexture != null)
             {
@@ -498,7 +531,7 @@ namespace GK1
                 RefreshAllPolygons(polygons);
         }
 
-        private void normalVectorMap_Checked(object sender, RoutedEventArgs e)
+        public void normalVectorMap_Checked(object sender, RoutedEventArgs e)
         {
             if (currentMap != null)
             {
@@ -559,19 +592,11 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.disturbancePixelData = new byte[3];
-                if (ClrPcker_Object != null && ClrPcker_Object.SelectedColor != null)
-                {
-                    visuals.disturbancePixelData[0] = ((Color)(ClrPcker_Object.SelectedColor)).R;
-                    visuals.disturbancePixelData[1] = ((Color)(ClrPcker_Object.SelectedColor)).G;
-                    visuals.disturbancePixelData[2] = ((Color)(ClrPcker_Object.SelectedColor)).B;
 
-                }
-                else
-                {
-                    visuals.disturbancePixelData[0] = 255;
-                    visuals.disturbancePixelData[1] = 255;
-                    visuals.disturbancePixelData[2] = 255;
-                }
+                visuals.disturbancePixelData[0] = 0;
+                visuals.disturbancePixelData[1] = 0;
+                visuals.disturbancePixelData[2] = 0;
+
                 visuals.disturbancePixelDataWidth = 1;
                 visuals.disturbancePixelDataHeight = 1;
                 if (polygons != null)
@@ -581,7 +606,7 @@ namespace GK1
                 RefreshAllPolygons(polygons);
         }
 
-        private void lightMapDisturbance_Checked(object sender, RoutedEventArgs e)
+        public void lightMapDisturbance_Checked(object sender, RoutedEventArgs e)
         {
             if (currentDisturbance != null)
             {
@@ -624,41 +649,33 @@ namespace GK1
                 }
             }
         }
-        private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void currentTexture_MouseLeftButtonDown(object sender, RoutedEventArgs e)
         {
-            loadFromFileTo(currentTexture);
-            if (constantTextureColor.IsChecked == true)
-                constantTextureColor_Checked(null, null);
+            ChooseTexture window = new ChooseTexture(this, Caller.Texture);
+            window.ShowDialog();
 
         }
-        private void currentMap_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        public void currentMap_MouseLeftButtonDown(object sender, RoutedEventArgs e)
         {
-            loadFromFileTo(currentMap);
-            if (normalVectorMap.IsChecked == true)
-                normalVectorMap_Checked(null, null);
-
-        }
-
-        private void currentDisturbance_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            loadFromFileTo(currentDisturbance);
-            if (lightMapDisturbance.IsChecked == true)
-                lightMapDisturbance_Checked(null, null);
+            ChooseTexture window = new ChooseTexture(this, Caller.Map);
+            window.ShowDialog();
 
 
         }
 
-        private void loadFromFileTo(Image img)
+        public void currentDisturbance_MouseLeftButtonDown(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog op = new OpenFileDialog();
-            op.Title = "Select a picture";
-            op.Filter = "All supported graphics|*.jpg;*.jpeg;*.png|" +
-              "JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg|" +
-              "Portable Network Graphic (*.png)|*.png";
-            if (op.ShowDialog() == true)
-            {
-                img.Source = new BitmapImage(new Uri(op.FileName));
-            }
+            ChooseTexture window = new ChooseTexture(this, Caller.Disturbance);
+            window.ShowDialog();
+
+
+
+        }
+
+        private void F_slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (polygons != null)
+                RefreshAllPolygons(polygons);
         }
     }
 

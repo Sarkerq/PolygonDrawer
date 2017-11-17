@@ -44,6 +44,7 @@ namespace GK1
         public Image lineCarbon;
         BitmapSource bitmap;
 
+        public double f_value, Kd_value, Ks_value, m_value;
 
         public Carbon(Image _lineCarbon)
         {
@@ -149,11 +150,11 @@ namespace GK1
             int xIndex = x * 3;
             int yIndex = y * rawStride;
 
-
+            if (texturePixelDataWidth == 0 || mapPixelDataWidth == 0 || disturbancePixelDataWidth == 0) return;
             int xTextureIndex = (x % texturePixelDataWidth) * 3;
             int textureRawStride = (texturePixelDataWidth * pf.BitsPerPixel + 7) / 8;
             int yTextureIndex = (y % texturePixelDataHeight) * textureRawStride;
-
+            //computeIndices(out xTextureIndex, out yTextureIndex, texturePixelDataWidth, texturePixelDataHeight, x, y);
 
             int xMapIndex = (x % mapPixelDataWidth) * 3;
             int mapRawStride = (mapPixelDataWidth * pf.BitsPerPixel + 7) / 8;
@@ -161,13 +162,13 @@ namespace GK1
 
 
             int xDisturbanceIndex = (x % disturbancePixelDataWidth) * 3;
-            int previousXDisturbanceIndex = ((x - 1) % disturbancePixelDataWidth) * 3;
-            if (previousXDisturbanceIndex < 0) previousXDisturbanceIndex = 0;
+            int nextXDisturbanceIndex = ((x + 1) % disturbancePixelDataWidth) * 3;
+            if (nextXDisturbanceIndex < 0) nextXDisturbanceIndex = 0;
             int disturbanceRawStride = (disturbancePixelDataWidth * pf.BitsPerPixel + 7) / 8;
 
             int yDisturbanceIndex = (y % disturbancePixelDataHeight) * disturbanceRawStride;
-            int previousYDisturbanceIndex = ((y - 1) % disturbancePixelDataHeight) * disturbanceRawStride;
-            if (previousYDisturbanceIndex < 0) previousYDisturbanceIndex = 0;
+            int nextYDisturbanceIndex = ((y + 1) % disturbancePixelDataHeight) * disturbanceRawStride;
+            if (nextYDisturbanceIndex < 0) nextYDisturbanceIndex = 0;
 
 
             int xLightIndex = 0;
@@ -180,14 +181,15 @@ namespace GK1
             reduceToZOne(normalizedVector);
             double dh_x =
                 disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
-                disturbancePixelData[previousXDisturbanceIndex + yDisturbanceIndex];
+                disturbancePixelData[nextXDisturbanceIndex + yDisturbanceIndex];
             double dh_y =
                 disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
-                disturbancePixelData[xDisturbanceIndex + previousYDisturbanceIndex]; ;
+                disturbancePixelData[xDisturbanceIndex + nextYDisturbanceIndex]; ;
             double[] disturbedVector = new double[3] {
-                dh_x,
-                dh_y,
-                -normalizedVector[0] * dh_x - normalizedVector[1] * dh_y};
+                -dh_x * f_value,
+                -dh_y * f_value,
+                (-normalizedVector[0] * dh_x - normalizedVector[1] * dh_y) *   f_value};
+            if (lightsourceRadius != 0) normalizeVector(disturbedVector);
             double[] normalizedDisturbedVector = new double[3] {
                 normalizedVector[0] +  disturbedVector[0],
                 normalizedVector[1] +  disturbedVector[1],
@@ -207,30 +209,39 @@ namespace GK1
                 lightPixelVector[xLightIndex + yLightIndex + 2] };
                 normalizeVector(thispixelLighting);
             }
+
+
             double NLAngle =
                 normalizedDisturbedVector[0] * thispixelLighting[0] +
                 normalizedDisturbedVector[1] * thispixelLighting[1] +
                 normalizedDisturbedVector[2] * thispixelLighting[2];
             if (NLAngle > 1) NLAngle = 1;
-            if (NLAngle < -1) NLAngle = -1;
+            if (NLAngle < 0) NLAngle = 0;
+            double[] reflectionVector = new double[3]{
+                2 * NLAngle * normalizedDisturbedVector[0] - thispixelLighting[0],
+                2 * NLAngle * normalizedDisturbedVector[1] - thispixelLighting[1],
+                2 * NLAngle * normalizedDisturbedVector[2] - - thispixelLighting[2]
+            };
+            normalizeVector(reflectionVector);
+            double RLAngle = reflectionVector[2];
             if (x < width && x >= 0 && y < height && y >= 0)
             {
                 pixelData[xIndex + yIndex] = computeLambertModel(
                     texturePixelData[(xTextureIndex + yTextureIndex)],
                     lightsourceColor.R,
-                    NLAngle);
+                    NLAngle, RLAngle);
 
 
                 pixelData[xIndex + yIndex + 1] = computeLambertModel(
                     texturePixelData[xTextureIndex + yTextureIndex + 1],
                     lightsourceColor.G,
-                    NLAngle);
+                    NLAngle, RLAngle);
 
 
                 pixelData[xIndex + yIndex + 2] = computeLambertModel(
                     texturePixelData[xTextureIndex + yTextureIndex + 2],
                     lightsourceColor.B,
-                    NLAngle);
+                    NLAngle, RLAngle);
             }
         }
 
@@ -238,13 +249,7 @@ namespace GK1
         {
 
             {
-                //double max = Math.Max(Math.Max(Math.Abs(normalizedVector[0]), Math.Abs(normalizedVector[1])), Math.Abs(normalizedVector[2]));
-                //if (max == 0) return;
-                //for (int i = 0; i < 3; i++)
-                //{
-                //    normalizedVector[i] /= max;
 
-                //}
                 double norm = Math.Sqrt(
                     normalizedVector[0] * normalizedVector[0] +
                     normalizedVector[1] * normalizedVector[1] +
@@ -282,20 +287,13 @@ namespace GK1
                 reducedVector[2] = 1;
             }
         }
-        double FastSqrtInvAroundOne(double x)
-        {
-            const double a0 = 15.0d / 8.0d;
-            const double a1 = -5.0d / 4.0d;
-            const double a2 = 3.0d / 8.0d;
 
-            return a0 + a1 * x + a2 * x * x;
-        }
-        private byte computeLambertModel(byte objectColor, byte lightsourceColor, double NLAngle)
+        private byte computeLambertModel(byte objectColor, byte lightsourceColor, double NLAngle, double VRAngle)
         {
             double I_O = ((double)objectColor) / 255;
             double I_L = ((double)lightsourceColor) / 255;
 
-            double result = I_O * I_L * NLAngle;
+            double result = Kd_value * I_O * I_L * NLAngle + Ks_value * I_L * Math.Pow(VRAngle, m_value);
             if (result > 1) result = 1;
             if (result < 0) result = 0;
             return (byte)(result * 255);
