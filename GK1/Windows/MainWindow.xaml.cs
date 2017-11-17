@@ -1,4 +1,5 @@
 ﻿using GK1.Windows;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -70,7 +71,7 @@ namespace GK1
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            if(visuals.lightsourceRadius > 0)
+            if (visuals.lightsourceRadius > 0 && animatedLightsourceVector.IsChecked == true)
             {
                 visuals.lightPixelVector[0] += Carbon.MAX_WIDTH / Carbon.TICKS_PER_DAY;
                 if (visuals.lightPixelVector[0] > Carbon.MAX_WIDTH) visuals.lightPixelVector[0] -= Carbon.MAX_WIDTH;
@@ -111,7 +112,7 @@ namespace GK1
 
         private Edge ClickedEdge(Point point)
         {
-            int xIndex = (int)point.X * 4;
+            int xIndex = (int)point.X * 3;
             int yIndex = (int)point.Y * visuals.rawStride;
             if (currentPolygon.edges.Contains(visuals.pixelOwner[xIndex + yIndex]))
                 return visuals.pixelOwner[xIndex + yIndex];
@@ -169,18 +170,19 @@ namespace GK1
 
         public void RefreshPolygon(GKPolygon polygon)
         {
+            if (polygon.edges.Count == polygon.vertices.Count && polygon.edges.Count > 0)
+            {
 
+                visuals.fillPolygon(polygon);
+            }
             if (mode == ApplicationMode.ClipPolygon && polygon == clippingPolygon)
                 visuals.redrawClippingPolygon(polygon);
             else if (polygon == currentPolygon)
                 visuals.redrawCurrentPolygon(polygon);
             else
                 visuals.redrawPolygon(polygon);
-            if (polygon.edges.Count == polygon.vertices.Count && polygon.edges.Count > 0)
-            {
 
-                visuals.fillPolygon(polygon);
-            }
+
         }
         public void RefreshAllPolygons(List<GKPolygon> polygons)
         {
@@ -514,19 +516,10 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.mapPixelData = new byte[3];
-                if (ClrPcker_Object != null && ClrPcker_Object.SelectedColor != null)
-                {
-                    visuals.mapPixelData[0] = ((Color)(ClrPcker_Object.SelectedColor)).R;
-                    visuals.mapPixelData[1] = ((Color)(ClrPcker_Object.SelectedColor)).G;
-                    visuals.mapPixelData[2] = ((Color)(ClrPcker_Object.SelectedColor)).B;
 
-                }
-                else
-                {
-                    visuals.mapPixelData[0] = 255;
-                    visuals.mapPixelData[1] = 255;
-                    visuals.mapPixelData[2] = 255;
-                }
+                visuals.mapPixelData[0] = 127;
+                visuals.mapPixelData[1] = 127;
+                visuals.mapPixelData[2] = 255;
                 visuals.mapPixelDataWidth = 1;
                 visuals.mapPixelDataHeight = 1;
                 if (polygons != null)
@@ -609,15 +602,14 @@ namespace GK1
             }
         }
 
-        private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-        }
+
 
         private void ClrPcker_Lightsource_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
             if (e.NewValue != null)
             {
                 visuals.lightsourceColor = (Color)e.NewValue;
+                constantLightsourceVector_Checked(null, null);
 
             }
         }
@@ -630,6 +622,42 @@ namespace GK1
                 {
                     MessageBox.Show("Please input correct number!", "Bad input", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+        private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            loadFromFileTo(currentTexture);
+            if (constantTextureColor.IsChecked == true)
+                constantTextureColor_Checked(null, null);
+
+        }
+        private void currentMap_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            loadFromFileTo(currentMap);
+            if (normalVectorMap.IsChecked == true)
+                normalVectorMap_Checked(null, null);
+
+        }
+
+        private void currentDisturbance_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            loadFromFileTo(currentDisturbance);
+            if (lightMapDisturbance.IsChecked == true)
+                lightMapDisturbance_Checked(null, null);
+
+
+        }
+
+        private void loadFromFileTo(Image img)
+        {
+            OpenFileDialog op = new OpenFileDialog();
+            op.Title = "Select a picture";
+            op.Filter = "All supported graphics|*.jpg;*.jpeg;*.png|" +
+              "JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg|" +
+              "Portable Network Graphic (*.png)|*.png";
+            if (op.ShowDialog() == true)
+            {
+                img.Source = new BitmapImage(new Uri(op.FileName));
             }
         }
     }

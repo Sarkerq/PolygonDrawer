@@ -19,8 +19,8 @@ namespace GK1
     public class Carbon
     {
         public const int TICKS_PER_DAY = 24;
-        public const int MAX_WIDTH = 1920;
-        public const int MAX_HEIGHT = 1080;
+        public const int MAX_WIDTH = 1440;
+        public const int MAX_HEIGHT = 810;
         public int rawStride, width, height;
         public PixelFormat pf = PixelFormats.Rgb24;
         public byte[] pixelData;
@@ -64,6 +64,7 @@ namespace GK1
         {
             bitmap = BitmapSource.Create(width, height,
                 96, 96, pf, null, pixelData, rawStride);
+
             lineCarbon.Source = bitmap;
         }
 
@@ -177,10 +178,10 @@ namespace GK1
                 ((double)(mapPixelData[xMapIndex + yMapIndex + 1]  - 127))/128,
                 ((double)(mapPixelData[xMapIndex + yMapIndex + 2]))/ 255};
             reduceToZOne(normalizedVector);
-            double dh_x = 
+            double dh_x =
                 disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
                 disturbancePixelData[previousXDisturbanceIndex + yDisturbanceIndex];
-            double dh_y = 
+            double dh_y =
                 disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
                 disturbancePixelData[xDisturbanceIndex + previousYDisturbanceIndex]; ;
             double[] disturbedVector = new double[3] {
@@ -201,8 +202,8 @@ namespace GK1
             else
             {
                 thispixelLighting = new double[3] {
-                Math.Abs(x -  lightPixelVector[xLightIndex + yLightIndex]),
-                Math.Abs(y -  lightPixelVector[xLightIndex + yLightIndex + 1]),
+                lightPixelVector[xLightIndex + yLightIndex] - x,
+                y -  lightPixelVector[xLightIndex + yLightIndex + 1],
                 lightPixelVector[xLightIndex + yLightIndex + 2] };
                 normalizeVector(thispixelLighting);
             }
@@ -237,20 +238,20 @@ namespace GK1
         {
 
             {
-                double max = Math.Max(Math.Max(Math.Abs(normalizedVector[0]), Math.Abs(normalizedVector[1])), Math.Abs(normalizedVector[2]));
-                if (max == 0) return;
-                for (int i = 0; i < 3; i++)
-                {
-                    normalizedVector[i] /= max;
+                //double max = Math.Max(Math.Max(Math.Abs(normalizedVector[0]), Math.Abs(normalizedVector[1])), Math.Abs(normalizedVector[2]));
+                //if (max == 0) return;
+                //for (int i = 0; i < 3; i++)
+                //{
+                //    normalizedVector[i] /= max;
 
-                }
-                double norm = FastSqrtInvAroundOne(
+                //}
+                double norm = Math.Sqrt(
                     normalizedVector[0] * normalizedVector[0] +
                     normalizedVector[1] * normalizedVector[1] +
                     normalizedVector[2] * normalizedVector[2]);
                 for (int i = 0; i < 3; i++)
                 {
-                    normalizedVector[i] *= norm * norm;
+                    normalizedVector[i] /= norm;
 
                 }
 
@@ -371,19 +372,8 @@ namespace GK1
                         AET.Add(new AETElement(e));
                         if (e.yMin > i)
                         {
-                            AET.Last().x -= ((int)e.yMin - i) * AET.Last().mRecip;
+                            AET.Last().x -= (e.yMin - i) * AET.Last().mRecip;
                         }
-                    }
-                }
-                AET.Sort(new ByX());
-                List<AETElement> AETList = AET.ToList();
-                for (int j = 0; j < AETList.Count - 1; j += 2)
-                {
-
-                    for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
-                    {
-                        SetPixelFromTexture(k, i);
-
                     }
                 }
                 AET.Sort(new ByYMax());
@@ -391,9 +381,23 @@ namespace GK1
                 {
                     AET.Remove(AET.Last());
                 }
+                AET.Sort(new ByX());
+                List<AETElement> AETList = AET.ToList();
+                for (int j = 0; j < AETList.Count - 1; j += 2)
+                {
+                    for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
+                    {
+                        SetPixelFromTexture(k, i);
+
+                    }
+                }
+
                 foreach (AETElement e in AET)
                 {
                     e.x -= e.mRecip;
+                    if (e.x > e.xMax && e.mRecip < 0) e.x = e.xMax;
+                    if (e.x < e.xMax && e.mRecip > 0) e.x = e.xMax;
+
                 }
             }
         }

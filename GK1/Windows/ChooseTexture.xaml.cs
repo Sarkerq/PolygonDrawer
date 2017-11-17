@@ -19,9 +19,16 @@ namespace GK1.Windows
     /// </summary>
     public partial class ChooseTexture : Window
     {
+        private MainWindow mainWindow;
+
         public ChooseTexture()
         {
             InitializeComponent();
+        }
+
+        public ChooseTexture(MainWindow mainWindow)
+        {
+            this.mainWindow = mainWindow;
         }
 
         private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

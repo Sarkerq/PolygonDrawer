@@ -30,13 +30,14 @@ namespace GK1
         public double yMax;
         public double x;
         public double mRecip;
+        public double xMax;
 
         public AETElement(ETElement e)
         {
             yMax = e.yMax;
             x = e.xMin;
             mRecip = e.mRecip;
-
+            xMax = e.xMax;
         }
     }
     public class ETElement
@@ -44,6 +45,7 @@ namespace GK1
         public double yMax;
         public double yMin;
         public double xMin;
+        public double xMax;
         public double mRecip;
 
         public ETElement(Edge e)
@@ -55,15 +57,18 @@ namespace GK1
             if (yMin == e.v1.coords.Y)
             {
                 xMin = e.v1.coords.X;
-
+                xMax = e.v2.coords.X;
             }
             else
             {
                 xMin = e.v2.coords.X;
+                xMax = e.v1.coords.X;
+
             }
 
             if (e.v1.coords.Y == e.v2.coords.Y) mRecip = 0;
             else mRecip = (e.v2.coords.X - e.v1.coords.X) / (e.v2.coords.Y - e.v1.coords.Y);
+
         }
     }
 }
