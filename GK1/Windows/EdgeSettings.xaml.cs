@@ -29,8 +29,8 @@ namespace GK1
 
         private void newVertice_Click(object sender, RoutedEventArgs e)
         {
-            context.currentPolygon.PutVerticeInTheMiddle(target);
-            context.RefreshAllPolygons(context.polygons);
+            context.currentPolyline.PutVerticeInTheMiddle(target);
+            context.visuals.RefreshPolyline(context.currentPolyline);
 
             Close();
         }

@@ -11,14 +11,14 @@ namespace GK1
         /// <summary>
         /// Oblicza pole wielokata przy pomocy formuly Gaussa
         /// </summary>
-        /// <param name="polygon">Kolejne wierzcholki wielokata</param>
+        /// <param name="polyline">Kolejne wierzcholki wielokata</param>
         /// <returns>Pole wielokata</returns>
-        public static double PolygonArea(this GKPolygon polygon)
+        public static double PolylineArea(this GKPolyline polyline)
         {
             double result = 0;
-            for (int i = 0; i < polygon.vertices.Count - 1; i++)
+            for (int i = 0; i < polyline.vertices.Count - 1; i++)
             {
-                result += Vertice.CrossProduct(polygon.vertices[i] - polygon.vertices[0], polygon.vertices[i + 1] - polygon.vertices[0]);
+                result += Vertice.CrossProduct(polyline.vertices[i] - polyline.vertices[0], polyline.vertices[i + 1] - polyline.vertices[0]);
             }
             return Math.Abs(result) / 2;
         }
@@ -47,8 +47,8 @@ namespace GK1
         }
 
         /// <summary>Oblicza czesc wspolna dwoch wielokatow przy pomocy algorytmu Sutherlanda–Hodgmana</summary>
-        /// <param name="subjectPolygon">Wielokat obcinany (wklesly lub wypukly)</param>
-        /// <param name="clipPolygon">Wielokat obcinajacy (musi byc wypukly i zakladamy, ze taki jest)</param>
+        /// <param name="subjectPolyline">Wielokat obcinany (wklesly lub wypukly)</param>
+        /// <param name="clipPolyline">Wielokat obcinajacy (musi byc wypukly i zakladamy, ze taki jest)</param>
         /// <returns>Czesc wspolna wielokatow</returns>
         /// <remarks>
         /// - mozna zalozyc, ze 3 kolejne punkty w kazdym z wejsciowych wielokatow nie sa wspolliniowe
@@ -59,7 +59,7 @@ namespace GK1
         /// - wierzcholki wielokata obcinanego, przez ktore przechodza krawedzie wielokata obcinajacego
         ///   zostaja zduplikowane w wielokacie wyjsciowym
         /// </remarks>
-        public static GKPolygon GetIntersectedPolygon(GKPolygon subjectPolygon, GKPolygon clipPolygon)
+        public static GKPolyline GetIntersectedPolyline(GKPolyline subjectPolyline, GKPolyline clipPolyline)
         {
             //output = lista wierzcholkow wielokata obcinanego
             //foreach (krawedz e wielokata obcinajacego )
@@ -85,16 +85,16 @@ namespace GK1
             //usunąć duplikaty z output // tylko dla wersji z usuwaniem duplikatow
             List<Edge> clipSegments = new List<Edge>();
             Vertice clipCenter = new Vertice();
-            for (int i = 0; i < clipPolygon.vertices.Count; i++)
+            for (int i = 0; i < clipPolyline.vertices.Count; i++)
             {
-                clipCenter.coords.X += clipPolygon.vertices[i].coords.X;
-                clipCenter.coords.Y += clipPolygon.vertices[i].coords.Y;
-                clipSegments.Add(new Edge(clipPolygon.vertices[i], clipPolygon.vertices[(i + 1) % clipPolygon.vertices.Count]));
+                clipCenter.coords.X += clipPolyline.vertices[i].coords.X;
+                clipCenter.coords.Y += clipPolyline.vertices[i].coords.Y;
+                clipSegments.Add(new Edge(clipPolyline.vertices[i], clipPolyline.vertices[(i + 1) % clipPolyline.vertices.Count]));
             }
-            clipCenter.coords.X /= clipPolygon.vertices.Count;
-            clipCenter.coords.Y /= clipPolygon.vertices.Count;
+            clipCenter.coords.X /= clipPolyline.vertices.Count;
+            clipCenter.coords.Y /= clipPolyline.vertices.Count;
 
-            List<Vertice> output = new List<Vertice>(subjectPolygon.vertices);
+            List<Vertice> output = new List<Vertice>(subjectPolyline.vertices);
             List<Vertice> input = new List<Vertice>();
             foreach (Edge clipSeg in clipSegments)
             {
@@ -128,9 +128,9 @@ namespace GK1
             {
                 if (!noDup.Contains(p)) noDup.Add(p);
             }
-            subjectPolygon.vertices = noDup;
-            subjectPolygon.PopulateEdges();
-            return subjectPolygon;
+            subjectPolyline.vertices = noDup;
+            subjectPolyline.PopulateEdges();
+            return subjectPolyline;
         }
 
         /// <summary>

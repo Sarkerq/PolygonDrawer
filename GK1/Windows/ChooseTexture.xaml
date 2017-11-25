@@ -13,7 +13,7 @@
 			</Image.Source>
 		</Image>
 		<Label Content="Choose predefined:" HorizontalAlignment="Left" Height="35" Margin="91,10,0,0" VerticalAlignment="Top" Width="170"/>
-		<Button Content="Select from disk..." HorizontalAlignment="Left" Height="34" Margin="56,203,0,0" VerticalAlignment="Top" Width="205" Click="Button_Click"/>
+		<Button Content="Select from disk..." HorizontalAlignment="Left" Height="34" Margin="56,203,0,0" VerticalAlignment="Top" Width="205"/>
 		<Image x:Name="currentTexture_Copy" Height="63"  Margin="91,70,78.6,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
 			<Image.Source>
 				<BitmapImage  UriSource="/Images/brick_heightmap.png" />

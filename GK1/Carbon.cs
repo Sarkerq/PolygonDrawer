@@ -74,6 +74,13 @@ namespace GK1
             Bresenham(e, color);
         }
 
+        public void RefreshPolyline(GKPolyline polyline)
+        {
+            clear();
+            redrawPolyline(polyline);
+            UpdateScreen();
+
+        }
 
         public void Bresenham(Edge e, Color color)
         {
@@ -312,43 +319,43 @@ namespace GK1
                     if (Math.Sqrt(Math.Pow(x - (int)v.coords.X, 2) + Math.Pow(y - (int)v.coords.Y, 2)) <= Global.verticeRadius / 1.2) SetPixel(x, y, middle);
                 }
         }
-        public void redrawPolygon(GKPolygon drawnPolygon, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
+        public void redrawPolyline(GKPolyline drawnPolyline, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
         {
-            if (drawnPolygon.vertices.Count >= 1)
+            if (drawnPolyline.vertices.Count >= 1)
             {
                 Color edgeColor = _edgeColor == null ? Colors.DarkGray : (Color)_edgeColor;
                 Color verticeInsideColor = _verticeInsideColor == null ? Colors.White : (Color)_verticeInsideColor;
                 Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
 
-                Vertice first = drawnPolygon.vertices[0];
+                Vertice first = drawnPolyline.vertices[0];
 
 
-                for (int i = 0; i < drawnPolygon.edges.Count; i++)
+                for (int i = 0; i < drawnPolyline.edges.Count; i++)
                 {
-                    drawEdge(drawnPolygon.edges[i], edgeColor);
+                    drawEdge(drawnPolyline.edges[i], edgeColor);
                 }
-                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(drawnPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
+                for (int i = 0; i < drawnPolyline.vertices.Count; i++)
+                    drawVertice(drawnPolyline.vertices[i], verticeBorderColor, verticeInsideColor);
 
             }
 
         }
-        internal void redrawClippingPolygon(GKPolygon polygon)
+        internal void redrawClippingPolyline(GKPolyline polyline)
         {
-            redrawPolygon(polygon, Colors.IndianRed, Colors.White, Colors.DarkRed);
+            redrawPolyline(polyline, Colors.IndianRed, Colors.White, Colors.DarkRed);
         }
-        internal void redrawCurrentPolygon(GKPolygon polygon)
+        internal void redrawCurrentPolyline(GKPolyline polyline)
         {
-            redrawPolygon(polygon, Colors.LightBlue, Colors.White, Colors.DarkBlue);
+            redrawPolyline(polyline, Colors.LightBlue, Colors.White, Colors.DarkBlue);
         }
-        public void fillPolygon(GKPolygon polygon)
+        public void fillPolyline(GKPolyline polyline)
         {
             List<ETElement>[] ET = new List<ETElement>[MAX_HEIGHT];
             for (int i = 0; i < MAX_HEIGHT; i++) ET[i] = new List<ETElement>();
             List<AETElement> AET = new List<AETElement>();
             int maxYMin = 0;
             int minYMin = int.MaxValue;
-            foreach (Edge e in polygon.edges)
+            foreach (Edge e in polyline.edges)
             {
                 ETElement etElement = new ETElement(e);
                 if (etElement.yMin >= 0)

@@ -33,60 +33,9 @@ namespace GK1.Windows
 
         private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            switch (caller)
-            {
-                case Caller.Texture:
-                    mainWindow.currentTexture = sender as Image;
-                    ((BitmapImage)(mainWindow.currentTexture.Source)).CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                    if (mainWindow.constantTextureColor.IsChecked == true)
-                        mainWindow.constantTextureColor_Checked(null, null);
-                    break;
-                case Caller.Map:
-
-                    mainWindow.currentMap = sender as Image;
-                    ((BitmapImage)(mainWindow.currentMap.Source)).CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-
-                    if (mainWindow.normalVectorMap.IsChecked == true)
-                        mainWindow.normalVectorMap_Checked(null, null);
-                    break;
-                case Caller.Disturbance:
-
-                    mainWindow.currentDisturbance = sender as Image;
-                    ((BitmapImage)(mainWindow.currentDisturbance.Source)).CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-
-                    if (mainWindow.lightMapDisturbance.IsChecked == true)
-                        mainWindow.lightMapDisturbance_Checked(null, null);
-                    break;
-            }
-
-            this.Close();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            switch (caller)
-            {
-                case Caller.Texture:
-                    loadFromFileTo(mainWindow.currentTexture);
-                    if (mainWindow.constantTextureColor.IsChecked == true)
-                        mainWindow.constantTextureColor_Checked(null, null);
-                    break;
-                case Caller.Map:
 
-                    loadFromFileTo(mainWindow.currentMap);
-                    if (mainWindow.normalVectorMap.IsChecked == true)
-                        mainWindow.normalVectorMap_Checked(null, null);
-                    break;
-                case Caller.Disturbance:
-
-                    loadFromFileTo(mainWindow.currentDisturbance);
-                    if (mainWindow.lightMapDisturbance.IsChecked == true)
-                        mainWindow.lightMapDisturbance_Checked(null, null);
-                    break;
-            }
-
-            this.Close();
-        }
         private void loadFromFileTo(Image img)
         {
             OpenFileDialog op = new OpenFileDialog();

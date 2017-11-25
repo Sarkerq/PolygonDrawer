@@ -83,7 +83,7 @@
     <Compile Include="Windows\EdgeSettings.xaml.cs">
       <DependentUpon>EdgeSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GKPolygon.cs" />
+    <Compile Include="GKPolyline.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Polar.cs" />
     <Compile Include="Windows\SetAngle.xaml.cs">
