@@ -19,7 +19,7 @@ namespace GK1
     public class Carbon
     {
         public const int TICKS_PER_DAY = 24;
-        public const int MAX_WIDTH = 1440;
+        public const int MAX_WIDTH = 1240;
         public const int MAX_HEIGHT = 810;
         public int rawStride, width, height;
         public PixelFormat pf = PixelFormats.Rgb24;

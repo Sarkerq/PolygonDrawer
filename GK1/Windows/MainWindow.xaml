@@ -34,8 +34,8 @@
 		</Canvas>
 		<Label Content="Bezier's curve" HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="0" VerticalAlignment="Top"/>
 		<Label Content="Number of points: " HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Top"/>
-		<TextBox  Grid.Row="1" Grid.Column="1"  HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="50"/>
-		<Button Grid.Row="2" Grid.Column="1" Content="Generate" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="0,0,0,0"/>
+		<TextBox x:Name="verticeNumber" Grid.Row="1" Grid.Column="1"  HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="12" VerticalAlignment="Top" Width="50"/>
+		<Button x:Name="generateVertices" Grid.Row="1" Content="Generate" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="75" Margin="130,0,0,46.2" Grid.ColumnSpan="2" Click="generateVertices_Click" Grid.RowSpan="2"/>
 		<CheckBox Content="Visible polyline" Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True"/>
 		<Button x:Name="loadPolyline" Grid.Row="4" Content="Load a polyline" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Margin="20,0,0,0" Click="loadPolyline_Click"/>
 		<Button x:Name="savePolyline" Grid.Row="4" Grid.Column="1" Content="Save a polyline" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Margin="20,0,0,0" Click="savePolyline_Click"/>
@@ -47,13 +47,13 @@
 		</Image>
 		<CheckBox Content="Gray colors" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="45,0,0,0"/>
 		<Grid Grid.Row="7" Grid.ColumnSpan="2">
-			<RadioButton x:Name="naiveRotation" Content="Naive" HorizontalAlignment="Left" Height="15" Margin="45,34.6,0,0" VerticalAlignment="Top" Width="80" IsEnabled="True"/>
+			<RadioButton x:Name="naiveRotation" Content="Naive" HorizontalAlignment="Left" Height="15" Margin="45,34.6,0,0" VerticalAlignment="Top" Width="80" IsChecked="True"/>
 			<RadioButton x:Name="shearRotation" Content="With filtering" HorizontalAlignment="Left" Height="20" Margin="45,64.6,0,0" VerticalAlignment="Top" Width="114"/>
 		</Grid>
 		<Grid  Grid.Row="8" Grid.ColumnSpan="2">
 
 			<RadioButton x:Name="rotationMoving" Content="Rotation" HorizontalAlignment="Left" Height="15" Margin="45,34.6,0,0" VerticalAlignment="Top" Width="80"/>
-			<RadioButton x:Name="curveMoving" Content="Moving on the curve" HorizontalAlignment="Left" Height="15" Margin="45,64.6,0,0" VerticalAlignment="Top" Width="148" IsEnabled="True"/>
+			<RadioButton x:Name="curveMoving" Content="Moving on the curve" HorizontalAlignment="Left" Height="15" Margin="45,64.6,0,0" VerticalAlignment="Top" Width="148" IsChecked="True"/>
 		</Grid>
 		<Button Grid.Row="9" Content="Start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="45,0,0,0"/>
 		<Button Grid.Row="9" Grid.Column="1" Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="45,0,0,0"/>

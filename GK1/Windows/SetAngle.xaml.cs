@@ -28,14 +28,7 @@ namespace GK1
             context = _context;
         }
 
-        private double ParseDouble(string text)
-        {
-            if (double.TryParse(text, out double parsedDouble))
-                return parsedDouble;
-            else
-                throw new ArgumentException();
 
-        }
 
 
 

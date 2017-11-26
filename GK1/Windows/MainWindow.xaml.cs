@@ -41,6 +41,7 @@ namespace GK1
         bool edgeDragged = false;
         int currentlyDragged = 0;
         ImageSource texture;
+        Random rnd = new Random(1337);
 
 
         public MainWindow()
@@ -102,7 +103,7 @@ namespace GK1
         {
             int xIndex = (int)point.X * 3;
             int yIndex = (int)point.Y * visuals.rawStride;
-            if (currentPolyline.edges.Contains(visuals.pixelOwner[xIndex + yIndex]))
+            if (xIndex < visuals.width && yIndex < visuals.height && currentPolyline.edges.Contains(visuals.pixelOwner[xIndex + yIndex]))
                 return visuals.pixelOwner[xIndex + yIndex];
             else
                 return null;
@@ -365,13 +366,35 @@ namespace GK1
                         currentPolyline.PopulateEdges();
                         visuals.RefreshPolyline(currentPolyline);
                     }
-                    catch(Exception)
+                    catch (Exception)
                     {
                         MessageBox.Show("This file is not suitable for loading", "Bad file", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                 }
             }
+        }
+
+        private void generateVertices_Click(object sender, RoutedEventArgs e)
+        {
+            int verticeNumber;
+            if (!int.TryParse(this.verticeNumber.Text, out verticeNumber) || verticeNumber < 2)
+            {
+                MessageBox.Show("Please put at least 2 vertices!", "Bad vertice number", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            currentPolyline = new GKPolyline(visuals);
+
+
+            for (int i = 0; i < verticeNumber; i++)
+            {
+                OnNewVertice(new Point(visuals.width * i / verticeNumber + rnd.NextDouble() * visuals.width / verticeNumber, rnd.NextDouble() * visuals.height));
+
+            }
+            currentPolyline.PopulateEdges();
+
+            visuals.RefreshPolyline(currentPolyline);
         }
     }
 
