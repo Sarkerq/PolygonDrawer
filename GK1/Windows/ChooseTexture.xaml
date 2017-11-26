@@ -9,19 +9,19 @@
 	<Grid>
 		<Image x:Name="currentTexture" Height="63"  Margin="0,70,169.6,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
 			<Image.Source>
-				<BitmapImage  UriSource="/Images/brick_normalmap.png" />
+				<BitmapImage  UriSource="/Images/chessboard.jpg" />
 			</Image.Source>
 		</Image>
 		<Label Content="Choose predefined:" HorizontalAlignment="Left" Height="35" Margin="91,10,0,0" VerticalAlignment="Top" Width="170"/>
 		<Button Content="Select from disk..." HorizontalAlignment="Left" Height="34" Margin="56,203,0,0" VerticalAlignment="Top" Width="205"/>
-		<Image x:Name="currentTexture_Copy" Height="63"  Margin="91,70,78.6,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
+		<Image x:Name="currentTexture_Copy" Height="63"  Margin="90,70,78.6,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
 			<Image.Source>
-				<BitmapImage  UriSource="/Images/brick_heightmap.png" />
+				<BitmapImage  UriSource="/Images/Lenna.png" />
 			</Image.Source>
 		</Image>
-		<Image x:Name="currentTexture_Copy1" Height="63"  Margin="170,70,-0.4,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
+		<Image x:Name="currentTexture_Copy1" Height="63"  Margin="190,70,-0.4,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
 			<Image.Source>
-				<BitmapImage  UriSource="/Images/normal_map.jpg" />
+				<BitmapImage  UriSource="/Images/brick_normalmap.png" />
 			</Image.Source>
 		</Image>
 	</Grid>

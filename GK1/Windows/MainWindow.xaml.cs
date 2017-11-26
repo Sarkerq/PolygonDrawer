@@ -308,6 +308,12 @@ namespace GK1
             SetAngle window = new SetAngle(this, modificationTarget);
             window.ShowDialog();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            ChooseTexture window = new ChooseTexture(this, Caller.Texture);
+            window.ShowDialog();
+        }
     }
 
     enum ApplicationMode

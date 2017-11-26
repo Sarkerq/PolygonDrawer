@@ -144,11 +144,14 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Resource Include="Images\brick_heightmap.png" />
+    <Resource Include="Images\chessboard.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Lenna.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="Images\brick_normalmap.png" />
-    <Resource Include="Images\normal_map.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

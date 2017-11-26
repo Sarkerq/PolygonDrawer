@@ -71,19 +71,6 @@ namespace GK1
 
         public void drawEdge(Edge e, Color color)
         {
-            Bresenham(e, color);
-        }
-
-        public void RefreshPolyline(GKPolyline polyline)
-        {
-            clear();
-            redrawPolyline(polyline);
-            UpdateScreen();
-
-        }
-
-        public void Bresenham(Edge e, Color color)
-        {
             int x = (int)e.v1.coords.X;
             int y = (int)e.v1.coords.Y;
             int x2 = (int)e.v2.coords.X;
@@ -136,7 +123,13 @@ namespace GK1
             }
         }
 
+        public void RefreshPolyline(GKPolyline polyline)
+        {
+            clear();
+            redrawPolyline(polyline);
+            UpdateScreen();
 
+        }
 
         public void SetPixel(int x, int y, Color c, Edge owner = null)
         {
@@ -339,10 +332,6 @@ namespace GK1
 
             }
 
-        }
-        internal void redrawClippingPolyline(GKPolyline polyline)
-        {
-            redrawPolyline(polyline, Colors.IndianRed, Colors.White, Colors.DarkRed);
         }
         internal void redrawCurrentPolyline(GKPolyline polyline)
         {

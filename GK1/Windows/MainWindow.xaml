@@ -6,73 +6,56 @@
         xmlns:local="clr-namespace:GK1"
 		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="PolylineCreator" Width="1440" Height="810"  ResizeMode="NoResize" WindowStyle="ToolWindow" WindowState="Maximized" >
+        Title="ImageMover" Width="1440" Height="810"  ResizeMode="NoResize" WindowStyle="ToolWindow" WindowState="Maximized" >
 	<Grid Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="40"/>
-			<RowDefinition Height="20"/>
-			<RowDefinition Height="4*"/>
-			<RowDefinition Height="20"/>
-			<RowDefinition Height="4*"/>
-			<RowDefinition Height="20"/>
-			<RowDefinition Height="4*"/>
-			<RowDefinition Height="20"/>
-			<RowDefinition Height="4*"/>
 			<RowDefinition Height="2*"/>
 			<RowDefinition Height="2*"/>
 			<RowDefinition Height="2*"/>
 			<RowDefinition Height="2*"/>
-
-
+			<RowDefinition Height="4*"/>
+			<RowDefinition Height="2*"/>
+			<RowDefinition Height="4*"/>
+			<RowDefinition Height="4*"/>
+			<RowDefinition Height="2*"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="6*"/>
-			<ColumnDefinition Width="6*"/>
-			<ColumnDefinition Width="6*"/>
-			<ColumnDefinition Width="3*"/>
-			<ColumnDefinition Width="2*"/>
-
+			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="9*"/>
 		</Grid.ColumnDefinitions>
-
-		<!-- MENUS !-->
-
-		<Menu Height="40"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" VerticalAlignment="Top" Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}" Grid.ColumnSpan="3">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<UniformGrid Rows="1"/>
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
-
-		</Menu>
-		<Grid Grid.Column="3" Grid.Row="2"/>
-		<Image x:Name="currentTexture" Grid.Column="4" Grid.Row="2" Height="0" Width="100"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5">
-			<Image.Source>
-				<BitmapImage  UriSource="/Images/brick_normalmap.png" />
-			</Image.Source>
-		</Image>
-		<Grid Grid.Column="3" Grid.Row="4"/>
-		<Image x:Name="currentMap" Grid.Column="4" Grid.Row="4" Height="0" Width="100" Margin="10,50,-0.4,36.8" VerticalAlignment="Top">
-			<Image.Source>
-				<BitmapImage  UriSource="/Images/normal_map.jpg" />
-			</Image.Source>
-		</Image>
-		<Grid Grid.Column="3" Grid.Row="6"/>
-		<Grid Grid.Column="3" Grid.Row="8"/>
-		<Image  x:Name="currentDisturbance"  Grid.Column="4" Grid.Row="8" Height="0" Width="100"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top" >
-			<Image.Source>
-				<BitmapImage  UriSource="/Images/brick_heightmap.png" />
-			</Image.Source>
-		</Image>
-
-		<!-- CANVAS !-->
 
 		<Canvas x:Name="drawingScreen"  Margin="10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" 
 				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" 
 				MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" ClipToBounds="True" 
 				 Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="13">
-			<Image x:Name="lineCarbon" Stretch="UniformToFill">
-
-			</Image>
+			<Image x:Name="lineCarbon" Stretch="UniformToFill"/>
 		</Canvas>
+		<Label Content="Bezier's curve" HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="0" VerticalAlignment="Top"/>
+		<Label Content="Number of points: " HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Top"/>
+		<TextBox  Grid.Row="1" Grid.Column="1"  HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="50"/>
+		<Button Grid.Row="2" Grid.Column="1" Content="Generate" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="0,0,0,0"/>
+		<CheckBox Content="Visible polyline" Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+		<Button Grid.Row="4" Content="Load a polyline" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Margin="20,0,0,0"/>
+		<Button Grid.Row="4" Grid.Column="1" Content="Save a polyline" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Margin="20,0,0,0"/>
+		<Button Grid.Row="5" Grid.Column="1" Content="Load" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="45,60,0,0" Click="Button_Click"/>
+		<Image  x:Name="currentImage"  Grid.Column="0" Grid.Row="5" Grid.RowSpan="2" Height="100" Width="100"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top" >
+			<Image.Source>
+				<BitmapImage  UriSource="/Images/chessboard.jpg" />
+			</Image.Source>
+		</Image>
+		<CheckBox Content="Gray colors" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="45,0,0,0"/>
+		<Grid Grid.Row="7" Grid.ColumnSpan="2">
+			<RadioButton Content="Naive" HorizontalAlignment="Left" Height="15" Margin="45,34.6,0,0" VerticalAlignment="Top" Width="80"/>
+			<RadioButton Content="With filtering" HorizontalAlignment="Left" Height="20" Margin="45,64.6,0,0" VerticalAlignment="Top" Width="114"/>
+		</Grid>
+		<Grid  Grid.Row="8" Grid.ColumnSpan="2">
+
+			<RadioButton Content="Rotation" HorizontalAlignment="Left" Height="15" Margin="45,34.6,0,0" VerticalAlignment="Top" Width="80"/>
+			<RadioButton Content="Moving on the curve" HorizontalAlignment="Left" Height="15" Margin="45,64.6,0,0" VerticalAlignment="Top" Width="148"/>
+		</Grid>
+		<Button Grid.Row="9" Content="Start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="45,0,0,0"/>
+		<Button Grid.Row="9" Grid.Column="1" Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="45,0,0,0"/>
 	</Grid>
 </Window>
