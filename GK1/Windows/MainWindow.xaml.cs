@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Xml.Serialization;
 
 namespace GK1
 {
@@ -66,7 +68,7 @@ namespace GK1
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-           
+
         }
 
         private void OnNewVertice(Point location)
@@ -311,8 +313,65 @@ namespace GK1
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            ChooseTexture window = new ChooseTexture(this, Caller.Texture);
+            ChooseTexture window = new ChooseTexture(this);
             window.ShowDialog();
+        }
+
+        private void savePolyline_Click(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog dlg = new SaveFileDialog
+            {
+                FileName = "polyline",
+                DefaultExt = ".xml",
+                Filter = "XML documents (.xml)|*.xml"
+            };
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                string filename = dlg.FileName;
+
+                XmlSerializer xs = new XmlSerializer(typeof(Vertice[]));
+                using (FileStream fs = new FileStream(filename, FileMode.Create))
+                {
+                    xs.Serialize(fs, currentPolyline.vertices.ToArray());
+                }
+            }
+        }
+
+        private void loadPolyline_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog
+            {
+                FileName = "polyline.xml",
+                DefaultExt = ".xml",
+                Filter = "XML documents (.xml)|*.xml"
+            };
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                string filename = dlg.FileName;
+
+                XmlSerializer xs = new XmlSerializer(typeof(Vertice[]));
+                using (FileStream fs = new FileStream(filename, FileMode.Open))
+                {
+                    try
+                    {
+                        Vertice[] verticeArray = (Vertice[])(xs.Deserialize(fs));
+                        currentPolyline.vertices = verticeArray.ToList();
+                        currentPolyline.PopulateEdges();
+                        visuals.RefreshPolyline(currentPolyline);
+                    }
+                    catch(Exception)
+                    {
+                        MessageBox.Show("This file is not suitable for loading", "Bad file", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                }
+            }
         }
     }
 

@@ -21,20 +21,28 @@ namespace GK1.Windows
     public partial class ChooseTexture : Window
     {
         private MainWindow mainWindow;
-        private Caller caller;
 
-        public ChooseTexture(MainWindow mainWindow, Caller caller)
+        public ChooseTexture(MainWindow mainWindow)
         {
             InitializeComponent();
 
             this.mainWindow = mainWindow;
-            this.caller = caller;
         }
 
         private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            mainWindow.currentImage = sender as Image;
+            ((BitmapImage)(mainWindow.currentImage.Source)).CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+
+            this.Close();
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            loadFromFileTo(mainWindow.currentImage);
+
+            this.Close();
+        }
 
         private void loadFromFileTo(Image img)
         {
@@ -48,11 +56,5 @@ namespace GK1.Windows
                 img.Source = new BitmapImage(new Uri(op.FileName));
             }
         }
-    }
-    public enum Caller
-    {
-        Texture,
-        Map,
-        Disturbance
     }
 }
