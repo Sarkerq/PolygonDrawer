@@ -46,6 +46,11 @@ namespace GK1
 
         public double f_value, Kd_value, Ks_value, m_value;
 
+        public bool showPolyline = true;
+        internal bool inGrayscale = false;
+        internal bool shearRotation = false;
+        internal bool fixedRotation = false;
+
         public Carbon(Image _lineCarbon)
         {
             lineCarbon = _lineCarbon;
@@ -126,7 +131,8 @@ namespace GK1
         public void RefreshPolyline(GKPolyline polyline)
         {
             clear();
-            redrawPolyline(polyline);
+            if (showPolyline)
+                redrawPolyline(polyline);
             UpdateScreen();
 
         }

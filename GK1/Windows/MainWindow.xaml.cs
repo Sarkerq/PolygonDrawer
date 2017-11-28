@@ -396,6 +396,84 @@ namespace GK1
 
             visuals.RefreshPolyline(currentPolyline);
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.showPolyline = true;
+                visuals.RefreshPolyline(currentPolyline);
+
+            }
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.showPolyline = false;
+                visuals.RefreshPolyline(currentPolyline);
+
+            }
+        }
+
+        private void startAnimation_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void stopAnimation_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void rotationMoving_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.fixedRotation = true;
+            }
+        }
+
+        private void curveMoving_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.fixedRotation = false;
+            }
+        }
+
+        private void shearRotation_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.shearRotation = true;
+            }
+        }
+
+        private void naiveRotation_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.shearRotation = false;
+            }
+        }
+
+        private void grayscale_Checked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.inGrayscale = true;
+            }
+        }
+
+        private void grayscale_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (visuals != null)
+            {
+                visuals.inGrayscale = false;
+            }
+        }
     }
 
     enum ApplicationMode
