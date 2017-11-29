@@ -11,11 +11,7 @@ using System.Windows.Media.Imaging;
 namespace GK1
 {
 
-    public enum Algorithm
-    {
-        WU,
-        Bresenham
-    }
+
     public class Carbon
     {
         public const int TICKS_PER_DAY = 24;
@@ -40,10 +36,10 @@ namespace GK1
         public Color lightsourceColor = Colors.White;
 
         public Edge[] pixelOwner;
-        public Algorithm algorithm;
         public Image lineCarbon;
         BitmapSource bitmap;
 
+        public Point middle;
         public double f_value, Kd_value, Ks_value, m_value;
 
         public bool showPolyline = true;
@@ -54,9 +50,9 @@ namespace GK1
         public Carbon(Image _lineCarbon)
         {
             lineCarbon = _lineCarbon;
-            algorithm = Algorithm.Bresenham;
             width = MAX_WIDTH;
             height = MAX_HEIGHT;
+            middle = new Point(width / 2, height / 2);
             pf = PixelFormats.Rgb24;
             rawStride = (MAX_WIDTH * pf.BitsPerPixel + 7) / 8;
             pixelData = new byte[rawStride * MAX_HEIGHT];
@@ -127,14 +123,23 @@ namespace GK1
                 }
             }
         }
-
-        public void RefreshPolyline(GKPolyline polyline)
+        internal void RefreshPoly(GKPolyline polyline, GKPolygon polygon)
         {
             clear();
             if (showPolyline)
                 redrawPolyline(polyline);
+            redrawPolygon(polygon);
             UpdateScreen();
+        }
 
+
+        public void RefreshPolyline(GKPolyline polyline)
+        {
+
+            clear();
+            if (showPolyline)
+                redrawPolyline(polyline);
+            UpdateScreen();
         }
 
         public void SetPixel(int x, int y, Color c, Edge owner = null)
@@ -339,6 +344,30 @@ namespace GK1
             }
 
         }
+        private void redrawPolygon(GKPolygon drawnPolygon)
+        {
+            if (drawnPolyline.vertices.Count >= 1)
+            {
+                Color edgeColor = _edgeColor == null ? Colors.DarkGray : (Color)_edgeColor;
+                Color verticeInsideColor = _verticeInsideColor == null ? Colors.White : (Color)_verticeInsideColor;
+                Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
+
+                Vertice first = drawnPolyline.vertices[0];
+
+
+                for (int i = 0; i < drawnPolyline.edges.Count; i++)
+                {
+                    drawEdge(drawnPolyline.edges[i], edgeColor);
+                }
+                for (int i = 0; i < drawnPolyline.vertices.Count; i++)
+                    drawVertice(drawnPolyline.vertices[i], verticeBorderColor, verticeInsideColor);
+
+            }
+
+        }
+
+
+
         internal void redrawCurrentPolyline(GKPolyline polyline)
         {
             redrawPolyline(polyline, Colors.LightBlue, Colors.White, Colors.DarkBlue);

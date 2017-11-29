@@ -29,7 +29,7 @@ namespace GK1
     public partial class MainWindow : Window
     {
         public GKPolyline currentPolyline;
-
+        public GKPolygon currentImageState;
         public Carbon visuals;
         Edge currentlyedgeDragged;
         Vector mouseToVertice1;
@@ -52,6 +52,7 @@ namespace GK1
 
             mode = ApplicationMode.Standard;
             currentPolyline = new GKPolyline(visuals);
+            currentImageState = new GKPolygon(visuals);
             //2 wielokąty na ekranie
             OnNewVertice(new Point(100, 200));
             OnNewVertice(new Point(100, 400));
@@ -419,6 +420,14 @@ namespace GK1
 
         private void startAnimation_Click(object sender, RoutedEventArgs e)
         {
+            visuals.texturePixelData = Global.ImageSourceToBytes(currentImage.Source);
+
+            visuals.texturePixelDataWidth = ((BitmapImage)(currentImage.Source)).PixelWidth;
+            visuals.texturePixelDataHeight = ((BitmapImage)(currentImage.Source)).PixelHeight;
+            OnNewVertice(new Point(0, 0));
+            OnNewVertice(new Point(visuals.texturePixelDataWidth, 0));
+            OnNewVertice(new Point(visuals.texturePixelDataWidth, visuals.texturePixelDataHeight));
+            OnNewVertice(new Point(0, visuals.texturePixelDataHeight));
 
         }
 
