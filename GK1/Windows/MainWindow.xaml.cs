@@ -42,8 +42,8 @@ namespace GK1
         int currentlyDragged = 0;
         ImageSource texture;
         Random rnd = new Random(1337);
-
-
+        DispatcherTimer dispatcherTimer;
+        double tmpAngle = 0;
         public MainWindow()
         {
 
@@ -60,18 +60,13 @@ namespace GK1
             currentPolyline.AddNewVertice(new Point(400, 200), mode);
             currentPolyline.PopulateEdges();
             visuals.RefreshAll(currentPolyline);
-            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
-            dispatcherTimer.Tick += dispatcherTimer_Tick;
-            dispatcherTimer.Interval = new TimeSpan(160000);
-            dispatcherTimer.Start();
 
+            dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += dispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(80000);
             visuals.UpdateScreen();
         }
 
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
-        {
-
-        }
         private void OnMovedPolyline(MouseButtonEventArgs e)
         {
             dragWholePolylineCoords = e.GetPosition(drawingScreen);
@@ -410,17 +405,28 @@ namespace GK1
 
         private void startAnimation_Click(object sender, RoutedEventArgs e)
         {
+            dispatcherTimer.Start();
+
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            //var watch = System.Diagnostics.Stopwatch.StartNew();
+            // the code that you want to measure comes here
+            tmpAngle++;
             visuals.texturePixelData = Global.ImageSourceToBytes(currentImage.Source);
 
             visuals.texturePixelDataWidth = ((BitmapImage)(currentImage.Source)).PixelWidth;
             visuals.texturePixelDataHeight = ((BitmapImage)(currentImage.Source)).PixelHeight;
             visuals.drawImageIn(out currentImageState, new Point(visuals.width / 2, visuals.height / 2), currentPolyline);
-            visuals.RefreshAll(currentPolyline, currentImageState);
-        }
+            visuals.RefreshAll(currentPolyline, currentImageState,tmpAngle % 360);
 
+            //watch.Stop();
+            //BezierLabel.Content = watch.ElapsedMilliseconds;
+        }
         private void stopAnimation_Click(object sender, RoutedEventArgs e)
         {
-
+            dispatcherTimer.Stop();
         }
 
         private void rotationMoving_Checked(object sender, RoutedEventArgs e)

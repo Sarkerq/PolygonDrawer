@@ -32,7 +32,7 @@
 				 Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="13">
 			<Image x:Name="lineCarbon" Stretch="UniformToFill"/>
 		</Canvas>
-		<Label Content="Bezier's curve" HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="0" VerticalAlignment="Top"/>
+		<Label x:Name="BezierLabel" Content="Bezier's curve" HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="0" VerticalAlignment="Top"/>
 		<Label Content="Number of points: " HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Top"/>
 		<TextBox x:Name="verticeNumber" Grid.Row="1" Grid.Column="1"  HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="12" VerticalAlignment="Top" Width="50"/>
 		<Button x:Name="generateVertices" Grid.Row="1" Content="Generate" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="75" Margin="130,0,0,46.2" Grid.ColumnSpan="2" Click="generateVertices_Click" Grid.RowSpan="2"/>
@@ -42,7 +42,7 @@
 		<Button Grid.Row="5" Grid.Column="1" Content="Load" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="45,60,0,0" Click="Button_Click"/>
 		<Image  x:Name="currentImage"  Grid.Column="0" Grid.Row="5" Grid.RowSpan="2" Height="100" Width="100"  Margin="10,50,-0.4,36.8" VerticalAlignment="Top" >
 			<Image.Source>
-				<BitmapImage  UriSource="/Images/chessboard.jpg" />
+				<BitmapImage  UriSource="/Images/chessboard.png" />
 			</Image.Source>
 		</Image>
 		<CheckBox x:Name="grayscale" Content="Gray colors" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="45,0,0,0" Checked="grayscale_Checked" Unchecked="grayscale_Unchecked"/>

@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Windows;
-
+using MathNet.Numerics;
 namespace GK1
 {
     public class Polar
     {
         Point origin;
         double radius;
-        double angle;
+        public double angle;
 
         public Polar(Point o, double r, double a)
         {
@@ -15,10 +16,10 @@ namespace GK1
             radius = r;
             angle = a;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point toCartesian()
         {
-            return new Point(origin.X + radius * Math.Cos(angle), origin.Y + radius * Math.Sin(angle));
+            return new Point(origin.X + radius * MathNet.Numerics.Trig.Cos(angle), origin.Y + radius * MathNet.Numerics.Trig.Sin(angle));
         }
     }
 }

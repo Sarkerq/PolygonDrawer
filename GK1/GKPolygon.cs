@@ -15,10 +15,12 @@ namespace GK1
         public List<Vertice> vertices = new List<Vertice>();
         public List<Edge> edges = new List<Edge>();
         public Carbon visuals;
+        public double angleToXAxis;
 
         public GKPolygon(Carbon _visuals)
         {
             visuals = _visuals;
+            angleToXAxis = 0;
         }
 
         public GKPolygon(GKPolygon original)

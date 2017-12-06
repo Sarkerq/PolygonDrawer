@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -113,7 +114,7 @@ namespace GK1
                 }
             }
         }
-        internal void RefreshAll(GKPolyline polyline, GKPolygon polygon = null)
+        internal void RefreshAll(GKPolyline polyline, GKPolygon polygon = null, double tilt = 0)
         {
             clear();
             if (showPolyline)
@@ -121,7 +122,7 @@ namespace GK1
             int segments = 100;
             redrawBezierCurve(polyline, segments);
             if (polygon != null)
-                redrawPolygon(polygon);
+                redrawPolygon(polygon, tilt);
             UpdateScreen();
         }
 
@@ -161,13 +162,15 @@ namespace GK1
         private void SetPixelFromTexture(int x, int y, int xTexture, int yTexture)
         {
             if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT) return;
+            if (xTexture < 0 || xTexture > texturePixelDataWidth || yTexture < 0 || yTexture > texturePixelDataHeight) return;
+
             int xIndex = x * 3;
             int yIndex = y * rawStride;
 
             if (texturePixelDataWidth == 0) return;
-            int xTextureIndex = (xTexture % texturePixelDataWidth) * 3;
+            int xTextureIndex = ((xTexture + texturePixelDataWidth) % texturePixelDataWidth) * 3;
             int textureRawStride = (texturePixelDataWidth * pf.BitsPerPixel + 7) / 8;
-            int yTextureIndex = (yTexture% texturePixelDataHeight) * textureRawStride;
+            int yTextureIndex = ((yTexture + texturePixelDataHeight) % texturePixelDataHeight) * textureRawStride;
 
             if (x < width && x >= 0 && y < height && y >= 0)
             {
@@ -283,7 +286,7 @@ namespace GK1
             }
 
         }
-        private void redrawPolygon(GKPolygon drawnPolygon, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
+        private void redrawPolygon(GKPolygon drawnPolygon, double tilt, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
         {
             if (drawnPolygon.vertices.Count >= 1)
             {
@@ -292,26 +295,42 @@ namespace GK1
                 Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
 
                 Vertice first = drawnPolygon.vertices[0];
-
-                fillPolygon(drawnPolygon);
+                GKPolygon tiltedPolygon = tiltPolygon(drawnPolygon, tilt);
+                fillPolygon(tiltedPolygon, tilt);
 
                 for (int i = 0; i < drawnPolygon.edges.Count; i++)
                 {
-                    drawEdge(drawnPolygon.edges[i], edgeColor);
+                    drawEdge(tiltedPolygon.edges[i], edgeColor);
                 }
                 for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(drawnPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
+                    drawVertice(tiltedPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
             }
 
         }
 
-
-
+        private GKPolygon tiltPolygon(GKPolygon drawnPolygon, double tilt)
+        {
+            Point middle = new Point((drawnPolygon.vertices[0].coords.X + drawnPolygon.vertices[drawnPolygon.vertices.Count / 2].coords.X) / 2,
+             (drawnPolygon.vertices[0].coords.Y + drawnPolygon.vertices[drawnPolygon.vertices.Count / 2].coords.Y) / 2);
+            GKPolygon tiltedPolygon = new GKPolygon(drawnPolygon);
+            for (int i = 0; i < drawnPolygon.vertices.Count; i++)
+            {
+                tiltedPolygon.vertices[i].coords = getTiltedPoint(middle, tiltedPolygon.vertices[i].coords, tilt);
+            }
+            return tiltedPolygon;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Point getTiltedPoint(Point middle, Point point, double tilt)
+        {
+            Polar tiltedPoint = Global.CartesianToPolar(middle, point);
+            tiltedPoint.angle += tilt * Math.PI / 180;
+            return tiltedPoint.toCartesian();
+        }
         internal void redrawCurrentPolyline(GKPolyline polyline)
         {
             redrawPolyline(polyline, Colors.LightBlue, Colors.White, Colors.DarkBlue);
         }
-        public void fillPolygon(GKPolygon polygon)
+        public void fillPolygon(GKPolygon polygon, double tilt)
         {
             List<ETElement>[] ET = new List<ETElement>[MAX_HEIGHT];
             for (int i = 0; i < MAX_HEIGHT; i++) ET[i] = new List<ETElement>();
@@ -329,6 +348,9 @@ namespace GK1
                 }
 
             }
+            Point middle = new Point((polygon.vertices[0].coords.X + polygon.vertices[polygon.vertices.Count / 2].coords.X) / 2,
+                                    (polygon.vertices[0].coords.Y + polygon.vertices[polygon.vertices.Count / 2].coords.Y) / 2);
+            GKPolygon originalPolygon = tiltPolygon(polygon, 360 - tilt);
             //We count from the top
             for (int i = Math.Min(maxYMin, MAX_HEIGHT - 1); i >= 0; i--)
             {
@@ -351,13 +373,19 @@ namespace GK1
                 }
                 AET.Sort(new ByX());
                 List<AETElement> AETList = AET.ToList();
+
                 for (int j = 0; j < AETList.Count - 1; j += 2)
                 {
-                    for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
+                    Parallel.For((int)AETList[j].x,  (int)AETList[j + 1].x, k =>
                     {
-                        SetPixelFromTexture(k, i,k - (int)polygon.vertices[0].coords.X, i - (int)polygon.vertices[0].coords.Y);
-
-                    }
+                        Point tiltedPoint = getTiltedPoint(middle, new Point(k, i), -tilt);
+                        SetPixelFromTexture((int)k, i, (int)tiltedPoint.X - (int)originalPolygon.vertices[0].coords.X, (int)tiltedPoint.Y - (int)originalPolygon.vertices[0].coords.Y);
+                    });
+                    //for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
+                    //{
+                    //    Point tiltedPoint = getTiltedPoint(middle, new Point(k, i), -tilt);
+                    //    SetPixelFromTexture(k, i, (int)tiltedPoint.X - (int)originalPolygon.vertices[0].coords.X, (int)tiltedPoint.Y - (int)originalPolygon.vertices[0].coords.Y);
+                    //}
                 }
 
                 foreach (AETElement e in AET)
