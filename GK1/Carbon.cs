@@ -24,16 +24,6 @@ namespace GK1
         public byte[] texturePixelData;
         public int texturePixelDataWidth, texturePixelDataHeight;
 
-        public double[] lightPixelVector; //[x,y,z]
-
-        public byte[] disturbancePixelData;
-        public int disturbancePixelDataWidth, disturbancePixelDataHeight;
-
-        public byte[] mapPixelData;
-        public int mapPixelDataWidth, mapPixelDataHeight;
-
-        public double lightsourceRadius;
-        public Color lightsourceColor = Colors.White;
 
         public Edge[] pixelOwner;
         public Image lineCarbon;
@@ -123,15 +113,28 @@ namespace GK1
                 }
             }
         }
-        internal void RefreshPoly(GKPolyline polyline, GKPolygon polygon)
+        internal void RefreshAll(GKPolyline polyline, GKPolygon polygon = null)
         {
             clear();
             if (showPolyline)
                 redrawPolyline(polyline);
-            redrawPolygon(polygon);
+            int segments = 100;
+            redrawBezierCurve(polyline, segments);
+            if (polygon != null)
+                redrawPolygon(polygon);
             UpdateScreen();
         }
 
+        private void redrawBezierCurve(GKPolyline polyline, int segments)
+        {
+            GKPolyline bezierCurve = new GKPolyline(this);
+            for (int i = 0; i < segments; i++)
+            {
+                bezierCurve.AddNewVertice(Bezier.DeCasteljau(polyline.vertices, (double)i / ((double)segments - 1)), ApplicationMode.AddPolyline);
+            }
+            bezierCurve.PopulateEdges();
+            redrawPolylineEdges(bezierCurve, Colors.Red);
+        }
 
         public void RefreshPolyline(GKPolyline polyline)
         {
@@ -155,104 +158,26 @@ namespace GK1
                     pixelOwner[xIndex + yIndex] = owner;
             }
         }
-        private void SetPixelFromTexture(int x, int y)
+        private void SetPixelFromTexture(int x, int y, int xTexture, int yTexture)
         {
             if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT) return;
             int xIndex = x * 3;
             int yIndex = y * rawStride;
 
-            if (texturePixelDataWidth == 0 || mapPixelDataWidth == 0 || disturbancePixelDataWidth == 0) return;
-            int xTextureIndex = (x % texturePixelDataWidth) * 3;
+            if (texturePixelDataWidth == 0) return;
+            int xTextureIndex = (xTexture % texturePixelDataWidth) * 3;
             int textureRawStride = (texturePixelDataWidth * pf.BitsPerPixel + 7) / 8;
-            int yTextureIndex = (y % texturePixelDataHeight) * textureRawStride;
-            //computeIndices(out xTextureIndex, out yTextureIndex, texturePixelDataWidth, texturePixelDataHeight, x, y);
+            int yTextureIndex = (yTexture% texturePixelDataHeight) * textureRawStride;
 
-            int xMapIndex = (x % mapPixelDataWidth) * 3;
-            int mapRawStride = (mapPixelDataWidth * pf.BitsPerPixel + 7) / 8;
-            int yMapIndex = (y % mapPixelDataHeight) * mapRawStride;
-
-
-            int xDisturbanceIndex = (x % disturbancePixelDataWidth) * 3;
-            int nextXDisturbanceIndex = ((x + 1) % disturbancePixelDataWidth) * 3;
-            if (nextXDisturbanceIndex < 0) nextXDisturbanceIndex = 0;
-            int disturbanceRawStride = (disturbancePixelDataWidth * pf.BitsPerPixel + 7) / 8;
-
-            int yDisturbanceIndex = (y % disturbancePixelDataHeight) * disturbanceRawStride;
-            int nextYDisturbanceIndex = ((y + 1) % disturbancePixelDataHeight) * disturbanceRawStride;
-            if (nextYDisturbanceIndex < 0) nextYDisturbanceIndex = 0;
-
-
-            int xLightIndex = 0;
-            int lightRawStride = 0;
-            int yLightIndex = 0;
-            double[] normalizedVector = new double[3] {
-                ((double)(mapPixelData[xMapIndex + yMapIndex]  - 127))/128,
-                ((double)(mapPixelData[xMapIndex + yMapIndex + 1]  - 127))/128,
-                ((double)(mapPixelData[xMapIndex + yMapIndex + 2]))/ 255};
-            reduceToZOne(normalizedVector);
-            double dh_x =
-                disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
-                disturbancePixelData[nextXDisturbanceIndex + yDisturbanceIndex];
-            double dh_y =
-                disturbancePixelData[xDisturbanceIndex + yDisturbanceIndex] -
-                disturbancePixelData[xDisturbanceIndex + nextYDisturbanceIndex]; ;
-            double[] disturbedVector = new double[3] {
-                -dh_x * f_value,
-                -dh_y * f_value,
-                (-normalizedVector[0] * dh_x - normalizedVector[1] * dh_y) *   f_value};
-            if (lightsourceRadius != 0) normalizeVector(disturbedVector);
-            double[] normalizedDisturbedVector = new double[3] {
-                normalizedVector[0] +  disturbedVector[0],
-                normalizedVector[1] +  disturbedVector[1],
-                normalizedVector[2] +  disturbedVector[2] };
-            normalizeVector(normalizedDisturbedVector);
-
-            double[] thispixelLighting;
-            if (lightsourceRadius == 0)
-            {
-                thispixelLighting = lightPixelVector;
-            }
-            else
-            {
-                thispixelLighting = new double[3] {
-                lightPixelVector[xLightIndex + yLightIndex] - x,
-                y -  lightPixelVector[xLightIndex + yLightIndex + 1],
-                lightPixelVector[xLightIndex + yLightIndex + 2] };
-                normalizeVector(thispixelLighting);
-            }
-
-
-            double NLAngle =
-                normalizedDisturbedVector[0] * thispixelLighting[0] +
-                normalizedDisturbedVector[1] * thispixelLighting[1] +
-                normalizedDisturbedVector[2] * thispixelLighting[2];
-            if (NLAngle > 1) NLAngle = 1;
-            if (NLAngle < 0) NLAngle = 0;
-            double[] reflectionVector = new double[3]{
-                2 * NLAngle * normalizedDisturbedVector[0] - thispixelLighting[0],
-                2 * NLAngle * normalizedDisturbedVector[1] - thispixelLighting[1],
-                2 * NLAngle * normalizedDisturbedVector[2] - - thispixelLighting[2]
-            };
-            normalizeVector(reflectionVector);
-            double RLAngle = reflectionVector[2];
             if (x < width && x >= 0 && y < height && y >= 0)
             {
-                pixelData[xIndex + yIndex] = computeLambertModel(
-                    texturePixelData[(xTextureIndex + yTextureIndex)],
-                    lightsourceColor.R,
-                    NLAngle, RLAngle);
+                pixelData[xIndex + yIndex] = texturePixelData[(xTextureIndex + yTextureIndex)];
 
 
-                pixelData[xIndex + yIndex + 1] = computeLambertModel(
-                    texturePixelData[xTextureIndex + yTextureIndex + 1],
-                    lightsourceColor.G,
-                    NLAngle, RLAngle);
+                pixelData[xIndex + yIndex + 1] = texturePixelData[xTextureIndex + yTextureIndex + 1];
 
 
-                pixelData[xIndex + yIndex + 2] = computeLambertModel(
-                    texturePixelData[xTextureIndex + yTextureIndex + 2],
-                    lightsourceColor.B,
-                    NLAngle, RLAngle);
+                pixelData[xIndex + yIndex + 2] = texturePixelData[xTextureIndex + yTextureIndex + 2];
             }
         }
 
@@ -323,13 +248,29 @@ namespace GK1
                     if (Math.Sqrt(Math.Pow(x - (int)v.coords.X, 2) + Math.Pow(y - (int)v.coords.Y, 2)) <= Global.verticeRadius / 1.2) SetPixel(x, y, middle);
                 }
         }
-        public void redrawPolyline(GKPolyline drawnPolyline, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
+        public void redrawPolyline(GKPolyline drawnPolyline, Color? edgeColor = null, Color? verticeInsideColor = null, Color? verticeBorderColor = null)
+        {
+            redrawPolylineEdges(drawnPolyline, edgeColor);
+            redrawPolylineVertices(drawnPolyline, verticeInsideColor, verticeBorderColor);
+        }
+
+        public void redrawPolylineVertices(GKPolyline drawnPolyline, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
+        {
+            if (drawnPolyline.vertices.Count >= 1)
+            {
+                Color verticeInsideColor = _verticeInsideColor == null ? Colors.White : (Color)_verticeInsideColor;
+                Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
+
+                for (int i = 0; i < drawnPolyline.vertices.Count; i++)
+                    drawVertice(drawnPolyline.vertices[i], verticeBorderColor, verticeInsideColor);
+            }
+        }
+
+        public void redrawPolylineEdges(GKPolyline drawnPolyline, Color? _edgeColor = null)
         {
             if (drawnPolyline.vertices.Count >= 1)
             {
                 Color edgeColor = _edgeColor == null ? Colors.DarkGray : (Color)_edgeColor;
-                Color verticeInsideColor = _verticeInsideColor == null ? Colors.White : (Color)_verticeInsideColor;
-                Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
 
                 Vertice first = drawnPolyline.vertices[0];
 
@@ -338,30 +279,28 @@ namespace GK1
                 {
                     drawEdge(drawnPolyline.edges[i], edgeColor);
                 }
-                for (int i = 0; i < drawnPolyline.vertices.Count; i++)
-                    drawVertice(drawnPolyline.vertices[i], verticeBorderColor, verticeInsideColor);
 
             }
 
         }
-        private void redrawPolygon(GKPolygon drawnPolygon)
+        private void redrawPolygon(GKPolygon drawnPolygon, Color? _edgeColor = null, Color? _verticeInsideColor = null, Color? _verticeBorderColor = null)
         {
-            if (drawnPolyline.vertices.Count >= 1)
+            if (drawnPolygon.vertices.Count >= 1)
             {
                 Color edgeColor = _edgeColor == null ? Colors.DarkGray : (Color)_edgeColor;
                 Color verticeInsideColor = _verticeInsideColor == null ? Colors.White : (Color)_verticeInsideColor;
                 Color verticeBorderColor = _verticeBorderColor == null ? Colors.Black : (Color)_verticeBorderColor;
 
-                Vertice first = drawnPolyline.vertices[0];
+                Vertice first = drawnPolygon.vertices[0];
 
+                fillPolygon(drawnPolygon);
 
-                for (int i = 0; i < drawnPolyline.edges.Count; i++)
+                for (int i = 0; i < drawnPolygon.edges.Count; i++)
                 {
-                    drawEdge(drawnPolyline.edges[i], edgeColor);
+                    drawEdge(drawnPolygon.edges[i], edgeColor);
                 }
-                for (int i = 0; i < drawnPolyline.vertices.Count; i++)
-                    drawVertice(drawnPolyline.vertices[i], verticeBorderColor, verticeInsideColor);
-
+                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
+                    drawVertice(drawnPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
             }
 
         }
@@ -372,14 +311,14 @@ namespace GK1
         {
             redrawPolyline(polyline, Colors.LightBlue, Colors.White, Colors.DarkBlue);
         }
-        public void fillPolyline(GKPolyline polyline)
+        public void fillPolygon(GKPolygon polygon)
         {
             List<ETElement>[] ET = new List<ETElement>[MAX_HEIGHT];
             for (int i = 0; i < MAX_HEIGHT; i++) ET[i] = new List<ETElement>();
             List<AETElement> AET = new List<AETElement>();
             int maxYMin = 0;
             int minYMin = int.MaxValue;
-            foreach (Edge e in polyline.edges)
+            foreach (Edge e in polygon.edges)
             {
                 ETElement etElement = new ETElement(e);
                 if (etElement.yMin >= 0)
@@ -416,7 +355,7 @@ namespace GK1
                 {
                     for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
                     {
-                        SetPixelFromTexture(k, i);
+                        SetPixelFromTexture(k, i,k - (int)polygon.vertices[0].coords.X, i - (int)polygon.vertices[0].coords.Y);
 
                     }
                 }
@@ -461,5 +400,15 @@ namespace GK1
             }
         }
 
+        internal void drawImageIn(out GKPolygon currentImageState, Point point, GKPolyline currentPolyline)
+        {
+            ApplicationMode mode = ApplicationMode.NewPolyline;
+            currentImageState = new GKPolygon(this);
+            currentImageState.AddNewVertice(new Point(point.X - texturePixelDataWidth / 2, point.Y - texturePixelDataHeight / 2), mode);
+            currentImageState.AddNewVertice(new Point(point.X + texturePixelDataWidth / 2, point.Y - texturePixelDataHeight / 2), mode);
+            currentImageState.AddNewVertice(new Point(point.X + texturePixelDataWidth / 2, point.Y + texturePixelDataHeight / 2), mode);
+            currentImageState.AddNewVertice(new Point(point.X - texturePixelDataWidth / 2, point.Y + texturePixelDataHeight / 2), mode);
+            currentImageState.PopulateEdges();
+        }
     }
 }

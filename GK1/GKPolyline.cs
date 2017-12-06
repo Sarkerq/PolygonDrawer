@@ -30,7 +30,15 @@ namespace GK1
                 edges.Add(new Edge(vertices[i], vertices[i + 1]));
         }
 
-
+        public void AddNewVertice(System.Windows.Point location, ApplicationMode mode)
+        {
+            Vertice newV = new Vertice(location);
+            if (mode == ApplicationMode.NewPolyline && vertices.Count >= 1)
+            {
+                edges.Add(new Edge(vertices.Last(), newV));
+            }
+            vertices.Add(newV);
+        }
 
 
 
@@ -40,7 +48,6 @@ namespace GK1
 
             if (index != vertices.Count - 1) edges.RemoveAt(index);
             if (index != 0) edges.RemoveAt(index - 1);
-            // !!!!!!!!!!!!!!!!!!!!DO POPRAWY !!!!!!!!!!
             if (index != 0 && index != vertices.Count - 1)
             {
                 edges.Insert(index - 1, new Edge(vertices[index - 1], vertices[index + 1]));

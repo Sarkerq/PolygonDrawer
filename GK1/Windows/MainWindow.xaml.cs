@@ -54,12 +54,12 @@ namespace GK1
             currentPolyline = new GKPolyline(visuals);
             currentImageState = new GKPolygon(visuals);
             //2 wielokąty na ekranie
-            OnNewVertice(new Point(100, 200));
-            OnNewVertice(new Point(100, 400));
-            OnNewVertice(new Point(500, 300));
-            OnNewVertice(new Point(400, 200));
+            currentPolyline.AddNewVertice(new Point(100, 200), mode);
+            currentPolyline.AddNewVertice(new Point(100, 400), mode);
+            currentPolyline.AddNewVertice(new Point(500, 300), mode);
+            currentPolyline.AddNewVertice(new Point(400, 200), mode);
             currentPolyline.PopulateEdges();
-            visuals.RefreshPolyline(currentPolyline);
+            visuals.RefreshAll(currentPolyline);
             System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += dispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(160000);
@@ -71,17 +71,6 @@ namespace GK1
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
 
-        }
-
-        private void OnNewVertice(Point location)
-        {
-            Vertice newV = new Vertice(location);
-            if (mode == ApplicationMode.NewPolyline && currentPolyline.vertices.Count >= 1)
-            {
-                currentPolyline.edges.Add(new Edge(currentPolyline.vertices.Last(), newV));
-            }
-            currentPolyline.vertices.Add(newV);
-            visuals.RefreshPolyline(currentPolyline);
         }
         private void OnMovedPolyline(MouseButtonEventArgs e)
         {
@@ -129,7 +118,7 @@ namespace GK1
                 dragged = true;
                 currentlyDragged = currentPolyline.vertices.IndexOf(target);
             }
-            visuals.RefreshPolyline(currentPolyline);
+            visuals.RefreshAll(currentPolyline);
         }
 
         private void endNewPolylineMode()
@@ -174,13 +163,13 @@ namespace GK1
             dragged = false;
             currentPolyline = new GKPolyline(visuals);
             //2 wielokąty na ekranie
-            OnNewVertice(new Point(100, 200));
-            OnNewVertice(new Point(100, 400));
-            OnNewVertice(new Point(500, 300));
-            OnNewVertice(new Point(400, 200));
+            currentPolyline.AddNewVertice(new Point(100, 200), mode);
+            currentPolyline.AddNewVertice(new Point(100, 400), mode);
+            currentPolyline.AddNewVertice(new Point(500, 300), mode);
+            currentPolyline.AddNewVertice(new Point(400, 200), mode);
             currentPolyline.PopulateEdges();
 
-            visuals.RefreshPolyline(currentPolyline);
+            visuals.RefreshAll(currentPolyline);
         }
 
 
@@ -193,7 +182,7 @@ namespace GK1
             {
                 v.coords += displacement;
             }
-            visuals.RefreshPolyline(currentPolyline);
+            visuals.RefreshAll(currentPolyline);
             dragWholePolylineCoords = pt;
         }
 
@@ -204,7 +193,7 @@ namespace GK1
 
                 currentPolyline.vertices[currentlyDragged].coords.X = Mouse.GetPosition(drawingScreen).X;
                 currentPolyline.vertices[currentlyDragged].coords.Y = Mouse.GetPosition(drawingScreen).Y;
-                visuals.RefreshPolyline(currentPolyline);
+                visuals.RefreshAll(currentPolyline);
                 return;
             }
             if (edgeDragged)
@@ -214,7 +203,7 @@ namespace GK1
                 currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
                 currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                visuals.RefreshPolyline(currentPolyline);
+                visuals.RefreshAll(currentPolyline);
 
                 return;
             }
@@ -232,7 +221,7 @@ namespace GK1
             {
                 currentPolyline.vertices[currentlyDragged].coords.X = e.GetPosition(drawingScreen).X;
                 currentPolyline.vertices[currentlyDragged].coords.Y = e.GetPosition(drawingScreen).Y;
-                visuals.RefreshPolyline(currentPolyline);
+                visuals.RefreshAll(currentPolyline);
                 dragged = false;
                 return;
             }
@@ -243,7 +232,7 @@ namespace GK1
                 currentlyedgeDragged.v1.coords.Y = Vector.Add(-mouseToVertice1, Mouse.GetPosition(drawingScreen)).Y;
                 currentlyedgeDragged.v2.coords.X = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).X;
                 currentlyedgeDragged.v2.coords.Y = Vector.Add(-mouseToVertice2, Mouse.GetPosition(drawingScreen)).Y;
-                visuals.RefreshPolyline(currentPolyline);
+                visuals.RefreshAll(currentPolyline);
                 edgeDragged = false;
                 return;
             }
@@ -267,7 +256,7 @@ namespace GK1
             {
                 Edge targetEdge = ClickedEdge(e.GetPosition(drawingScreen));
                 if (targetEdge != null) OnClickedEdge(targetEdge, e);
-                else if (mode == ApplicationMode.NewPolyline) OnNewVertice(e.GetPosition(drawingScreen));
+                else if (mode == ApplicationMode.NewPolyline) currentPolyline.AddNewVertice(e.GetPosition(drawingScreen), mode);
 
                 else
                 {
@@ -275,6 +264,7 @@ namespace GK1
                 }
 
             }
+            visuals.RefreshAll(currentPolyline);
         }
 
 
@@ -365,7 +355,7 @@ namespace GK1
                         Vertice[] verticeArray = (Vertice[])(xs.Deserialize(fs));
                         currentPolyline.vertices = verticeArray.ToList();
                         currentPolyline.PopulateEdges();
-                        visuals.RefreshPolyline(currentPolyline);
+                        visuals.RefreshAll(currentPolyline);
                     }
                     catch (Exception)
                     {
@@ -390,12 +380,12 @@ namespace GK1
 
             for (int i = 0; i < verticeNumber; i++)
             {
-                OnNewVertice(new Point(visuals.width * i / verticeNumber + rnd.NextDouble() * visuals.width / verticeNumber, rnd.NextDouble() * visuals.height));
+                currentPolyline.AddNewVertice(new Point(visuals.width * i / verticeNumber + rnd.NextDouble() * visuals.width / verticeNumber, rnd.NextDouble() * visuals.height), mode);
 
             }
             currentPolyline.PopulateEdges();
 
-            visuals.RefreshPolyline(currentPolyline);
+            visuals.RefreshAll(currentPolyline);
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -403,7 +393,7 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.showPolyline = true;
-                visuals.RefreshPolyline(currentPolyline);
+                visuals.RefreshAll(currentPolyline);
 
             }
         }
@@ -413,7 +403,7 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.showPolyline = false;
-                visuals.RefreshPolyline(currentPolyline);
+                visuals.RefreshAll(currentPolyline);
 
             }
         }
@@ -424,11 +414,8 @@ namespace GK1
 
             visuals.texturePixelDataWidth = ((BitmapImage)(currentImage.Source)).PixelWidth;
             visuals.texturePixelDataHeight = ((BitmapImage)(currentImage.Source)).PixelHeight;
-            OnNewVertice(new Point(0, 0));
-            OnNewVertice(new Point(visuals.texturePixelDataWidth, 0));
-            OnNewVertice(new Point(visuals.texturePixelDataWidth, visuals.texturePixelDataHeight));
-            OnNewVertice(new Point(0, visuals.texturePixelDataHeight));
-
+            visuals.drawImageIn(out currentImageState, new Point(visuals.width / 2, visuals.height / 2), currentPolyline);
+            visuals.RefreshAll(currentPolyline, currentImageState);
         }
 
         private void stopAnimation_Click(object sender, RoutedEventArgs e)
@@ -485,7 +472,7 @@ namespace GK1
         }
     }
 
-    enum ApplicationMode
+    public enum ApplicationMode
     {
         Standard,
         NewPolyline,

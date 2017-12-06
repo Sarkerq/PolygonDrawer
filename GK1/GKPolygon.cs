@@ -32,7 +32,15 @@ namespace GK1
         }
 
 
-
+        public void AddNewVertice(System.Windows.Point location, ApplicationMode mode)
+        {
+            Vertice newV = new Vertice(location);
+            if (mode == ApplicationMode.NewPolyline && vertices.Count >= 1)
+            {
+                edges.Add(new Edge(vertices.Last(), newV));
+            }
+            vertices.Add(newV);
+        }
 
 
         internal void deleteVertice(Vertice target)

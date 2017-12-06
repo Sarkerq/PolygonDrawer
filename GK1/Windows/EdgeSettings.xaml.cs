@@ -30,7 +30,7 @@ namespace GK1
         private void newVertice_Click(object sender, RoutedEventArgs e)
         {
             context.currentPolyline.PutVerticeInTheMiddle(target);
-            context.visuals.RefreshPolyline(context.currentPolyline);
+            context.visuals.RefreshAll(context.currentPolyline);
 
             Close();
         }

@@ -12,8 +12,8 @@ namespace GK1
 {
     static class Global
     {
-        public const double verticeRadius = 12;
-        public const int lineWidth = 3;
+        public const double verticeRadius = 4;
+        public const int lineWidth = 2;
         public const int statusRadius = 10;
         public const int statusLineSeparRadius = 3;
         public const int statusLineLengthRadius = 6;
