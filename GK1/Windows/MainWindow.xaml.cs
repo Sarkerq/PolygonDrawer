@@ -150,28 +150,6 @@ namespace GK1
             drawingScreen.Children.Add(lineCarbon);
         }
 
-
-        private void newPolyline_Click(object sender, RoutedEventArgs e)
-        {
-
-            ClearCanvas();
-            visuals.clear();
-            mode = ApplicationMode.Standard;
-            dragged = false;
-            currentPolyline = new GKPolyline(visuals);
-            //2 wielokąty na ekranie
-            currentPolyline.AddNewVertice(new Point(100, 200), mode);
-            currentPolyline.AddNewVertice(new Point(100, 400), mode);
-            currentPolyline.AddNewVertice(new Point(500, 300), mode);
-            currentPolyline.AddNewVertice(new Point(400, 200), mode);
-            currentPolyline.PopulateEdges();
-
-            visuals.RefreshAll(currentPolyline);
-        }
-
-
-
-
         private void DraggingPolyline(Point pt)
         {
             Vector displacement = pt - dragWholePolylineCoords;
@@ -463,7 +441,7 @@ namespace GK1
         {
             if (visuals != null)
             {
-                visuals.shearRotation = true;
+                visuals.filterRotation = true;
             }
         }
 
@@ -471,7 +449,7 @@ namespace GK1
         {
             if (visuals != null)
             {
-                visuals.shearRotation = false;
+                visuals.filterRotation = false;
             }
         }
 

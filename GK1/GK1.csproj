@@ -77,24 +77,24 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Bezier.cs" />
-    <Compile Include="Carbon.cs" />
-    <Compile Include="Edge.cs" />
-    <Compile Include="geom.cs" />
-    <Compile Include="GKPolygon.cs" />
+    <Compile Include="Classes\Bezier.cs" />
+    <Compile Include="Classes\Carbon.cs" />
+    <Compile Include="Classes\Edge.cs" />
+    <Compile Include="Classes\geom.cs" />
+    <Compile Include="Classes\GKPolygon.cs" />
     <Compile Include="Windows\ChooseTexture.xaml.cs">
       <DependentUpon>ChooseTexture.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\EdgeSettings.xaml.cs">
       <DependentUpon>EdgeSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GKPolyline.cs" />
-    <Compile Include="Global.cs" />
-    <Compile Include="Polar.cs" />
+    <Compile Include="Classes\GKPolyline.cs" />
+    <Compile Include="Classes\Global.cs" />
+    <Compile Include="Classes\Polar.cs" />
     <Compile Include="Windows\SetAngle.xaml.cs">
       <DependentUpon>SetAngle.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Vertice.cs" />
+    <Compile Include="Classes\Vertice.cs" />
     <Page Include="Windows\ChooseTexture.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

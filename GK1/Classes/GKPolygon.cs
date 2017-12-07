@@ -71,38 +71,6 @@ namespace GK1
 
 
         }
-
-
-        public Vertice nextVertice(Vertice v)
-        {
-            int index = vertices.IndexOf(v);
-            return vertices[(index + 1) % vertices.Count];
-        }
-        public Vertice previousVertice(Vertice v)
-        {
-            int index = vertices.IndexOf(v);
-            return vertices[(index - 1 + vertices.Count) % vertices.Count];
-        }
-        public Edge nextEdge(Vertice v)
-        {
-            int index = vertices.IndexOf(v);
-            return edges[index];
-        }
-        public Edge previousEdge(Vertice v)
-        {
-            int index = vertices.IndexOf(v);
-            return edges[(index - 1 + vertices.Count) % vertices.Count];
-        }
-        public Edge nextEdge(Edge e)
-        {
-            int index = edges.IndexOf(e);
-            return edges[index];
-        }
-        public Edge previousEdge(Edge e)
-        {
-            int index = edges.IndexOf(e);
-            return edges[(index - 1 + edges.Count) % edges.Count];
-        }
         public void PutVerticeInTheMiddle(Edge target)
         {
             int indexVert1 = 0, indexVert2 = 0;
