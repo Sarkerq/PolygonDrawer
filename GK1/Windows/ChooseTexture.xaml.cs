@@ -31,16 +31,15 @@ namespace GK1.Windows
 
         private void currentTexture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            mainWindow.currentImage = sender as Image;
-            ((BitmapImage)(mainWindow.currentImage.Source)).CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-
+            mainWindow.currentImage = loadFromImageTo( sender as Image, mainWindow.currentImage);
+            mainWindow.dispatcherTimer_Tick(null, null);
             this.Close();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             loadFromFileTo(mainWindow.currentImage);
-
+            mainWindow.dispatcherTimer_Tick(null, null);
             this.Close();
         }
 
@@ -53,8 +52,29 @@ namespace GK1.Windows
               "Portable Network Graphic (*.png)|*.png";
             if (op.ShowDialog() == true)
             {
-                img.Source = new BitmapImage(new Uri(op.FileName));
+                BitmapImage myBitmapImage = new BitmapImage();
+
+                myBitmapImage.BeginInit();
+                myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                myBitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                myBitmapImage.UriSource = new Uri(op.FileName);
+
+                myBitmapImage.EndInit();
+                img.Source = null;
+                img.Source = myBitmapImage;
             }
+        }
+        private Image loadFromImageTo(Image src, Image dst)
+        {
+
+            BitmapImage myBitmapImage = (src.Source as BitmapImage);   
+
+            myBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            myBitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+
+            dst.Source = null;
+            dst.Source = myBitmapImage;
+            return dst;
         }
     }
 }

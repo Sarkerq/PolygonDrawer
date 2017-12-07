@@ -28,7 +28,7 @@
 
 		<Canvas x:Name="drawingScreen"  Margin="10" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" 
 				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="drawingScreen_MouseLeftButtonUp" 
-				MouseMove="drawingScreen_MouseMove" MouseRightButtonUp="drawingScreen_MouseRightButtonUp" ClipToBounds="True" 
+				MouseMove="drawingScreen_MouseMove"  ClipToBounds="True" 
 				 Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="13">
 			<Image x:Name="lineCarbon" Stretch="UniformToFill"/>
 		</Canvas>

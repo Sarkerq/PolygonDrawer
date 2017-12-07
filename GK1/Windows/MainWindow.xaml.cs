@@ -45,6 +45,7 @@ namespace GK1
         DispatcherTimer dispatcherTimer;
         double tmpAngle = 0;
         int bezierCurveIndex = 0;
+        public int segmentsNumber = 400;
 
         public MainWindow()
         {
@@ -61,6 +62,8 @@ namespace GK1
             currentPolyline.AddNewVertice(new Point(500, 300), mode);
             currentPolyline.AddNewVertice(new Point(400, 200), mode);
             currentPolyline.PopulateEdges();
+            dispatcherTimer_Tick(null, null);
+
             visuals.RefreshAll(currentPolyline);
 
             dispatcherTimer = new DispatcherTimer();
@@ -243,41 +246,6 @@ namespace GK1
         }
 
 
-        private void drawingScreen_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            Vertice targetVertice = ClickedVertice(e.GetPosition(drawingScreen));
-            if (targetVertice != null) OnRightClickedVertice(targetVertice);
-            else
-            {
-                Edge targetEdge = ClickedEdge(e.GetPosition(drawingScreen));
-                if (targetEdge != null) OnRightClickedEdge(targetEdge, e);
-
-            }
-        }
-
-
-        private void OnRightClickedEdge(Edge targetEdge, MouseButtonEventArgs e)
-        {
-            ShowModifyEdgeWindow(targetEdge);
-        }
-
-        private void ShowModifyEdgeWindow(Edge modificationTarget)
-        {
-            EdgeSettings window = new EdgeSettings(this, modificationTarget);
-            window.ShowDialog();
-        }
-
-        private void OnRightClickedVertice(Vertice targetVertice)
-        {
-            ShowSetAngleWindow(targetVertice);
-        }
-
-        private void ShowSetAngleWindow(Vertice modificationTarget)
-        {
-            SetAngle window = new SetAngle(this, modificationTarget);
-            window.ShowDialog();
-        }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             ChooseTexture window = new ChooseTexture(this);
@@ -389,16 +357,16 @@ namespace GK1
 
         }
 
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        public void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             // the code that you want to measure comes here
-            tmpAngle++;
+            if (e != null && sender != null) tmpAngle++;
             visuals.texturePixelData = Global.ImageSourceToBytes(currentImage.Source);
 
             visuals.texturePixelDataWidth = ((BitmapImage)(currentImage.Source)).PixelWidth;
             visuals.texturePixelDataHeight = ((BitmapImage)(currentImage.Source)).PixelHeight;
-            int segments = 400;
+            int segments = segmentsNumber;
             if (visuals.fixedRotation)
             {
                 visuals.drawImageIn(out currentImageState, new Point(visuals.width / 2, visuals.height / 2), currentPolyline);
@@ -406,7 +374,7 @@ namespace GK1
             }
             else
             {
-                bezierCurveIndex = (bezierCurveIndex + 1) % segments;
+                if (e != null && sender != null) bezierCurveIndex = (bezierCurveIndex + 1) % segments;
                 GKPolyline bezierCurve = visuals.getBezierCurve(currentPolyline, segments);
                 double[] bezierAngles = visuals.getBezierAngles(currentPolyline, segments);
                 visuals.drawImageIn(out currentImageState, bezierCurve.vertices[bezierCurveIndex].coords, currentPolyline);
@@ -426,6 +394,8 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.fixedRotation = true;
+                dispatcherTimer_Tick(null, null);
+
             }
         }
 
@@ -434,6 +404,8 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.fixedRotation = false;
+                dispatcherTimer_Tick(null, null);
+
             }
         }
 
@@ -442,6 +414,8 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.filterRotation = true;
+                dispatcherTimer_Tick(null, null);
+
             }
         }
 
@@ -450,6 +424,8 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.filterRotation = false;
+                dispatcherTimer_Tick(null, null);
+
             }
         }
 
@@ -458,6 +434,8 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.inGrayscale = true;
+                dispatcherTimer_Tick(null, null);
+
             }
         }
 
@@ -466,6 +444,8 @@ namespace GK1
             if (visuals != null)
             {
                 visuals.inGrayscale = false;
+                dispatcherTimer_Tick(null, null);
+
             }
         }
     }
