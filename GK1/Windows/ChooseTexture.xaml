@@ -9,7 +9,7 @@
 	<Grid>
 		<Image x:Name="currentTexture" Height="63"  Margin="0,70,169.6,0" VerticalAlignment="Top" RenderTransformOrigin="0.732,0.5" MouseLeftButtonDown="currentTexture_MouseLeftButtonDown">
 			<Image.Source>
-				<BitmapImage  UriSource="/Images/chessboard.jpg" />
+				<BitmapImage  UriSource="/Images/chessboard.png" />
 			</Image.Source>
 		</Image>
 		<Label Content="Choose predefined:" HorizontalAlignment="Left" Height="35" Margin="91,10,0,0" VerticalAlignment="Top" Width="170"/>

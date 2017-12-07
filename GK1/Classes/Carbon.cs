@@ -193,68 +193,152 @@ namespace GK1
 
             if (x < width && x >= 0 && y < height && y >= 0)
             {
-                pixelData[xIndex + yIndex] = texturePixelData[(xTextureIndex + yTextureIndex)];
-
-
-                pixelData[xIndex + yIndex + 1] = texturePixelData[xTextureIndex + yTextureIndex + 1];
-
-
-                pixelData[xIndex + yIndex + 2] = texturePixelData[xTextureIndex + yTextureIndex + 2];
-            }
-        }
-
-        public void normalizeVector(double[] normalizedVector)
-        {
-
-            {
-
-                double norm = Math.Sqrt(
-                    normalizedVector[0] * normalizedVector[0] +
-                    normalizedVector[1] * normalizedVector[1] +
-                    normalizedVector[2] * normalizedVector[2]);
-                for (int i = 0; i < 3; i++)
+                if (inGrayscale)
                 {
-                    normalizedVector[i] /= norm;
-
+                    pixelData[xIndex + yIndex] = pixelData[xIndex + yIndex + 1] = pixelData[xIndex + yIndex + 2] =
+                        (byte)(
+                        0.299 * (double)texturePixelData[(xTextureIndex + yTextureIndex)] +
+                        0.587 * (double)texturePixelData[xTextureIndex + yTextureIndex + 1] +
+                        0.114 * (double)texturePixelData[xTextureIndex + yTextureIndex + 2]
+                        );
                 }
-
-            }
-        }
-        public void reduceToZOne(double[] reducedVector)
-        {
-            if (reducedVector[2] == 0)
-            {
-                for (int i = 0; i < 2; i++)
+                else
                 {
-                    if (reducedVector[i] > 0)
-                        reducedVector[i] = 1;
-                    else if (reducedVector[i] == 0)
-                        reducedVector[i] = 0;
-                    else
-                        reducedVector[i] = -1;
+                    pixelData[xIndex + yIndex] = texturePixelData[(xTextureIndex + yTextureIndex)];
 
+
+                    pixelData[xIndex + yIndex + 1] = texturePixelData[xTextureIndex + yTextureIndex + 1];
+
+
+                    pixelData[xIndex + yIndex + 2] = texturePixelData[xTextureIndex + yTextureIndex + 2];
                 }
             }
+        }
+        private void SetFilteredPixelFromTexture(int x, int y, double xTexture, double yTexture)
+        {
+            if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT) return;
+            if (xTexture < 0 || xTexture > texturePixelDataWidth || yTexture < 0 || yTexture > texturePixelDataHeight) return;
+
+            int xIndex = x * 3;
+            int yIndex = y * rawStride;
+
+            if (texturePixelDataWidth == 0) return;
+            int xTextureFloor = (int)xTexture;
+            int yTextureFloor = (int)yTexture;
+            double xTextureMantissa = xTexture - (double)xTextureFloor;
+            double yTextureMantissa = yTexture - (double)yTextureFloor;
+
+            int xTextureIndex = (((int)xTexture + texturePixelDataWidth) % texturePixelDataWidth) * 3;
+            int nextXTextureIndex;
+            if ((int)xTexture == texturePixelDataWidth - 1)
+                nextXTextureIndex = xTextureIndex;
             else
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    reducedVector[i] /= reducedVector[2];
+                nextXTextureIndex = (((int)xTexture + 1 + texturePixelDataWidth) % texturePixelDataWidth) * 3;
 
+            int textureRawStride = (texturePixelDataWidth * pf.BitsPerPixel + 7) / 8;
+            int yTextureIndex = (((int)yTexture + texturePixelDataHeight) % texturePixelDataHeight) * textureRawStride;
+            int nextYTextureIndex;
+            if ((int)yTexture == texturePixelDataHeight - 1)
+                nextYTextureIndex = yTextureIndex;
+            else
+                nextYTextureIndex = (((int)yTexture + 1 + texturePixelDataHeight) % texturePixelDataHeight) * textureRawStride;
+
+            if (x < width && x >= 0 && y < height && y >= 0)
+            {
+                if (inGrayscale)
+                {
+                    pixelData[xIndex + yIndex] = pixelData[xIndex + yIndex + 1] = pixelData[xIndex + yIndex + 2] =
+                        (byte)((
+                        0.299 * (double)texturePixelData[(xTextureIndex + yTextureIndex)] +
+                        0.587 * (double)texturePixelData[xTextureIndex + yTextureIndex + 1] +
+                        0.114 * (double)texturePixelData[xTextureIndex + yTextureIndex + 2]
+                        ));
                 }
-                reducedVector[2] = 1;
+                else
+                {
+                    pixelData[xIndex + yIndex] = (byte)(
+                        (1 - yTextureMantissa) * (
+                        (1 - xTextureMantissa) * (double)texturePixelData[(xTextureIndex + yTextureIndex)] +
+                        (xTextureMantissa) * (double)texturePixelData[(nextXTextureIndex + yTextureIndex)]
+                        ) + yTextureMantissa * (
+                        (1 - xTextureMantissa) * (double)texturePixelData[(xTextureIndex + nextYTextureIndex)] +
+                        (xTextureMantissa) * (double)texturePixelData[(nextXTextureIndex + nextYTextureIndex)]
+                        )
+                        );
+
+
+                    pixelData[xIndex + yIndex + 1] = (byte)(
+                        (1 - yTextureMantissa) * (
+                        (1 - xTextureMantissa) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 1)] +
+                        (xTextureMantissa) * (double)texturePixelData[(nextXTextureIndex + yTextureIndex + 1)]
+                        ) + yTextureMantissa * (
+                        (1 - xTextureMantissa) * (double)texturePixelData[(xTextureIndex + nextYTextureIndex + 1)] +
+                        (xTextureMantissa) * (double)texturePixelData[(nextXTextureIndex + nextYTextureIndex + 1)]
+                        )
+                        );
+
+
+                    pixelData[xIndex + yIndex + 2] = (byte)(
+                        (1 - yTextureMantissa) * (
+                        (1 - xTextureMantissa) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 2)] +
+                        (xTextureMantissa) * (double)texturePixelData[(nextXTextureIndex + yTextureIndex + 2)]
+                        ) + yTextureMantissa * (
+                        (1 - xTextureMantissa) * (double)texturePixelData[(xTextureIndex + nextYTextureIndex + 2)] +
+                        (xTextureMantissa) * (double)texturePixelData[(nextXTextureIndex + nextYTextureIndex + 2)]
+                        )
+                        );
+                }
             }
         }
 
-        private byte computeLambertModel(byte objectColor, byte lightsourceColor, double NLAngle, double VRAngle)
+        private void SetShearedPixelsFromTexture(int xTexture, int yTexture, GKPolygon polygon, double tilt)
         {
-            double I_O = ((double)objectColor) / 255;
-            double I_L = ((double)lightsourceColor) / 255;
+            double[] toPaint = new double[3];
+            //SHEAR 1
+            double x = xTexture - Math.Tan(tilt / 2) * yTexture;
+            double y = yTexture;
+            double xFloor = (double)((int)x);
+            double yFloor = (double)((int)y);
+            if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT) return;
+            if (xTexture < 0 || xTexture > texturePixelDataWidth || yTexture < 0 || yTexture > texturePixelDataHeight) return;
 
-            double result = Kd_value * I_O * I_L * NLAngle + Ks_value * I_L * Math.Pow(VRAngle, m_value);
-            if (result > 1) result = 1;
-            if (result < 0) result = 0;
-            return (byte)(result * 255);
+            int xIndex = (int)x * 3;
+            int yIndex = (int)y * rawStride;
+
+            if (texturePixelDataWidth == 0) return;
+            int xTextureIndex = ((xTexture + texturePixelDataWidth) % texturePixelDataWidth) * 3;
+            int textureRawStride = (texturePixelDataWidth * pf.BitsPerPixel + 7) / 8;
+            int yTextureIndex = ((yTexture + texturePixelDataHeight) % texturePixelDataHeight) * textureRawStride;
+
+            toPaint[0] = (1 - x + xFloor) * (double)texturePixelData[(xTextureIndex + yTextureIndex)] +
+                (x - xFloor) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 3)];
+            toPaint[1] = (1 - x + xFloor) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 1)] +
+                (x - xFloor) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 4)];
+            toPaint[2] = (1 - x + xFloor) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 2)] +
+                (x - xFloor) * (double)texturePixelData[(xTextureIndex + yTextureIndex + 5)];
+
+            if (x < width && x >= 0 && y < height && y >= 0)
+            {
+                if (inGrayscale)
+                {
+                    pixelData[xIndex + yIndex] = pixelData[xIndex + yIndex + 1] = pixelData[xIndex + yIndex + 2] =
+                        (byte)(
+                        0.299 * (double)texturePixelData[(xTextureIndex + yTextureIndex)] +
+                        0.587 * (double)texturePixelData[xTextureIndex + yTextureIndex + 1] +
+                        0.114 * (double)texturePixelData[xTextureIndex + yTextureIndex + 2]
+                        );
+                }
+                else
+                {
+                    pixelData[xIndex + yIndex] = texturePixelData[(xTextureIndex + yTextureIndex)];
+
+
+                    pixelData[xIndex + yIndex + 1] = texturePixelData[xTextureIndex + yTextureIndex + 1];
+
+
+                    pixelData[xIndex + yIndex + 2] = texturePixelData[xTextureIndex + yTextureIndex + 2];
+                }
+            }
         }
 
         public void drawVertice(Vertice v, Color border, Color middle)
@@ -315,14 +399,17 @@ namespace GK1
 
                 Vertice first = drawnPolygon.vertices[0];
                 GKPolygon tiltedPolygon = tiltPolygon(drawnPolygon, tilt);
+                //if (shearRotation)
+                //    fillPolygon(drawnPolygon, tilt);
+                //else
                 fillPolygon(tiltedPolygon, tilt);
 
-                for (int i = 0; i < drawnPolygon.edges.Count; i++)
-                {
-                    drawEdge(tiltedPolygon.edges[i], edgeColor);
-                }
-                for (int i = 0; i < drawnPolygon.vertices.Count; i++)
-                    drawVertice(tiltedPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
+                //for (int i = 0; i < drawnPolygon.edges.Count; i++)
+                //{
+                //    drawEdge(tiltedPolygon.edges[i], edgeColor);
+                //}
+                //for (int i = 0; i < drawnPolygon.vertices.Count; i++)
+                //    drawVertice(tiltedPolygon.vertices[i], verticeBorderColor, verticeInsideColor);
             }
 
         }
@@ -345,6 +432,9 @@ namespace GK1
             tiltedPoint.angle += tilt * Math.PI / 180;
             return tiltedPoint.toCartesian();
         }
+
+
+
         internal void redrawCurrentPolyline(GKPolyline polyline)
         {
             redrawPolyline(polyline, Colors.LightBlue, Colors.White, Colors.DarkBlue);
@@ -395,11 +485,26 @@ namespace GK1
 
                 for (int j = 0; j < AETList.Count - 1; j += 2)
                 {
-                    Parallel.For((int)AETList[j].x,  (int)AETList[j + 1].x, k =>
+                    if (shearRotation)
                     {
-                        Point tiltedPoint = getTiltedPoint(middle, new Point(k, i), -tilt);
-                        SetPixelFromTexture((int)k, i, (int)tiltedPoint.X - (int)originalPolygon.vertices[0].coords.X, (int)tiltedPoint.Y - (int)originalPolygon.vertices[0].coords.Y);
-                    });
+                        for (int k = (int)AETList[j].x; k < (int)AETList[j + 1].x; k++)
+
+                        {
+                            Point tiltedPoint = getTiltedPoint(middle, new Point(k, i), -tilt);
+                            SetFilteredPixelFromTexture(k, i, tiltedPoint.X - originalPolygon.vertices[0].coords.X, tiltedPoint.Y - originalPolygon.vertices[0].coords.Y);
+
+                            //SetShearedPixelsFromTexture(k - (int)polygon.vertices[0].coords.X, i - (int)polygon.vertices[0].coords.Y, polygon, tilt);
+                        }
+                    }
+                    else
+                    {
+
+                        Parallel.For((int)AETList[j].x, (int)AETList[j + 1].x, k =>
+                        {
+                            Point tiltedPoint = getTiltedPoint(middle, new Point(k, i), -tilt);
+                            SetPixelFromTexture((int)k, i, (int)tiltedPoint.X - (int)originalPolygon.vertices[0].coords.X, (int)tiltedPoint.Y - (int)originalPolygon.vertices[0].coords.Y);
+                        });
+                    }
                     //for (int k = (int)AETList[j].x; k <= AETList[j + 1].x; k++)
                     //{
                     //    Point tiltedPoint = getTiltedPoint(middle, new Point(k, i), -tilt);
@@ -416,7 +521,6 @@ namespace GK1
                 }
             }
         }
-
 
 
         public class ByX : IComparer<AETElement>

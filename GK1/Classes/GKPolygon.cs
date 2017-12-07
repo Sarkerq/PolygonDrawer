@@ -137,23 +137,6 @@ namespace GK1
             }
         }
 
-        internal bool IsConvex()
-        {
-
-            for (int i = 0; i < vertices.Count - 3; i++)
-            {
-                if (Global.TurnDirection(vertices[i + 1], vertices[i + 2], vertices[i + 3]) !=
-                    Global.TurnDirection(vertices[i], vertices[i + 1], vertices[i + 2]))
-                    return false;
-            }
-            if (Global.TurnDirection(vertices[vertices.Count - 2], vertices[vertices.Count - 1], vertices[0]) !=
-                Global.TurnDirection(vertices[vertices.Count - 3], vertices[vertices.Count - 2], vertices[vertices.Count - 1]))
-                return false;
-            if (Global.TurnDirection(vertices[vertices.Count - 1], vertices[0], vertices[1]) !=
-                Global.TurnDirection(vertices[vertices.Count - 2], vertices[vertices.Count - 1], vertices[0]))
-                return false;
-            return true;
-        }
     }
 
 }

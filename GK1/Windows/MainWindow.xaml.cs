@@ -420,7 +420,7 @@ namespace GK1
 
             visuals.texturePixelDataWidth = ((BitmapImage)(currentImage.Source)).PixelWidth;
             visuals.texturePixelDataHeight = ((BitmapImage)(currentImage.Source)).PixelHeight;
-            int segments = 200;
+            int segments = 400;
             if (visuals.fixedRotation)
             {
                 visuals.drawImageIn(out currentImageState, new Point(visuals.width / 2, visuals.height / 2), currentPolyline);

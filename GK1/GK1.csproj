@@ -82,7 +82,6 @@
     <Compile Include="Edge.cs" />
     <Compile Include="geom.cs" />
     <Compile Include="GKPolygon.cs" />
-    <Compile Include="SutherlandHodgman.cs" />
     <Compile Include="Windows\ChooseTexture.xaml.cs">
       <DependentUpon>ChooseTexture.xaml</DependentUpon>
     </Compile>
