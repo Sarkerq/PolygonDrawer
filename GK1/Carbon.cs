@@ -114,19 +114,20 @@ namespace GK1
                 }
             }
         }
-        internal void RefreshAll(GKPolyline polyline, GKPolygon polygon = null, double tilt = 0)
+        internal void RefreshAll(GKPolyline polyline, int segments = 200, GKPolygon polygon = null, double tilt = 0)
         {
             clear();
             if (showPolyline)
                 redrawPolyline(polyline);
-            int segments = 100;
             redrawBezierCurve(polyline, segments);
             if (polygon != null)
+            {
                 redrawPolygon(polygon, tilt);
+            }
             UpdateScreen();
         }
 
-        private void redrawBezierCurve(GKPolyline polyline, int segments)
+        public void redrawBezierCurve(GKPolyline polyline, int segments)
         {
             GKPolyline bezierCurve = new GKPolyline(this);
             for (int i = 0; i < segments; i++)
@@ -136,7 +137,25 @@ namespace GK1
             bezierCurve.PopulateEdges();
             redrawPolylineEdges(bezierCurve, Colors.Red);
         }
-
+        public GKPolyline getBezierCurve(GKPolyline polyline, int segments)
+        {
+            GKPolyline bezierCurve = new GKPolyline(this);
+            for (int i = 0; i < segments; i++)
+            {
+                bezierCurve.AddNewVertice(Bezier.DeCasteljau(polyline.vertices, (double)i / ((double)segments - 1)), ApplicationMode.AddPolyline);
+            }
+            bezierCurve.PopulateEdges();
+            return bezierCurve;
+        }
+        public double[] getBezierAngles(GKPolyline polyline, int segments)
+        {
+            double[] bezierAngles = new double[segments];
+            for (int i = 0; i < segments; i++)
+            {
+                bezierAngles[i] = Bezier.DeCasteljauAngle(polyline.vertices, (double)i / ((double)segments - 1));
+            }
+            return bezierAngles;
+        }
         public void RefreshPolyline(GKPolyline polyline)
         {
 

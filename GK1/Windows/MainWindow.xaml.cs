@@ -44,6 +44,8 @@ namespace GK1
         Random rnd = new Random(1337);
         DispatcherTimer dispatcherTimer;
         double tmpAngle = 0;
+        int bezierCurveIndex = 0;
+
         public MainWindow()
         {
 
@@ -418,9 +420,21 @@ namespace GK1
 
             visuals.texturePixelDataWidth = ((BitmapImage)(currentImage.Source)).PixelWidth;
             visuals.texturePixelDataHeight = ((BitmapImage)(currentImage.Source)).PixelHeight;
-            visuals.drawImageIn(out currentImageState, new Point(visuals.width / 2, visuals.height / 2), currentPolyline);
-            visuals.RefreshAll(currentPolyline, currentImageState,tmpAngle % 360);
+            int segments = 200;
+            if (visuals.fixedRotation)
+            {
+                visuals.drawImageIn(out currentImageState, new Point(visuals.width / 2, visuals.height / 2), currentPolyline);
+                visuals.RefreshAll(currentPolyline, segments, currentImageState, tmpAngle % 360);
+            }
+            else
+            {
+                bezierCurveIndex = (bezierCurveIndex + 1) % segments;
+                GKPolyline bezierCurve = visuals.getBezierCurve(currentPolyline, segments);
+                double[] bezierAngles = visuals.getBezierAngles(currentPolyline, segments);
+                visuals.drawImageIn(out currentImageState, bezierCurve.vertices[bezierCurveIndex].coords, currentPolyline);
+                visuals.RefreshAll(currentPolyline, segments, currentImageState, bezierAngles[bezierCurveIndex] * 180 / Math.PI);
 
+            }
             //watch.Stop();
             //BezierLabel.Content = watch.ElapsedMilliseconds;
         }
